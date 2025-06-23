@@ -121,14 +121,31 @@
         .gauge-cover {
             width: 320px;
             height: 160px;
-            background: #1f2937;
+            background: #ffffff;
             border-top-left-radius: 160px;
             border-top-right-radius: 160px;
             position: absolute;
             top: 40px;
             left: 40px;
-            text-align: center;
             z-index: 3;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .gauge-value {
+            font-size: 3.75rem; /* 60px */
+            line-height: 1;
+            font-weight: 900;
+            color: #3b82f6;
+        }
+        .gauge-label {
+            font-size: 1.25rem; /* 20px */
+            line-height: 1.75rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-top: 0.5rem;
+            text-align: center;
         }
         .gauge-needle {
             width: 4px;
@@ -153,6 +170,38 @@
             left: 50%;
             transform: translateX(-50%);
             z-index: 10;
+        }
+        @media (max-width: 480px) {
+            .gauge {
+                width: 80vw;
+                height: 40vw;
+                border-top-left-radius: 40vw;
+                border-top-right-radius: 40vw;
+            }
+            .gauge-cover {
+                width: 64vw;
+                height: 32vw;
+                top: 8vw;
+                left: 8vw;
+                border-top-left-radius: 32vw;
+                border-top-right-radius: 32vw;
+            }
+            .gauge-value {
+                font-size: 10vw;
+            }
+            .gauge-label {
+                font-size: 3.5vw;
+                line-height: 1.2;
+            }
+            .gauge-needle {
+                width: max(2px, 1vw);
+                height: 38vw;
+            }
+            .gauge-center {
+                width: 4vw;
+                height: 4vw;
+                bottom: -2vw;
+            }
         }
         .candidate-bar {
             background-color: #e5e7eb;
@@ -189,9 +238,9 @@
                 <div class="relative w-full max-w-md flex flex-col items-center mt-4">
                     <div class="gauge mx-auto">
                         <div class="gauge-inner"></div>
-                        <div class="gauge-cover" style="background-color: #ffffff;">
-                            <p class="text-6xl font-black text-[#3b82f6] pt-10">75.6%</p>
-                            <p class="text-xl font-bold text-gray-800">Mamdani Win Probability</p>
+                        <div class="gauge-cover">
+                            <p class="gauge-value">75.6%</p>
+                            <p class="gauge-label">Mamdani Win Probability</p>
                         </div>
                         <div id="gauge-needle" class="gauge-needle"></div>
                         <div class="gauge-center"></div>
