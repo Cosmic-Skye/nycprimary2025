@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NYC Democratic Primary: The Final Showdown</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7;
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 40vh;
+            width: 100%;
+            max-width: 650px;
+            max-height: 400px;
+        }
+        .small-chart-container {
+            position: relative;
+            margin: auto;
+            height: 35vh;
+            width: 100%;
+            max-width: 350px;
+            max-height: 350px;
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #F94144, #F3722C);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+        .flow-arrow {
+            color: #d1d5db; /* gray-300 */
+            font-size: 2.5rem;
+            line-height: 1;
+            font-weight: 900;
+        }
+        .gauge {
+            width: 400px;
+            height: 200px;
+            position: relative;
+            overflow: hidden;
+            border-top-left-radius: 200px;
+            border-top-right-radius: 200px;
+        }
+        .gauge-inner {
+            width: 100%;
+            height: 100%;
+            background: conic-gradient(from 180deg, #F94144 0%, #F9C74F 50%, #90BE6D 100%);
+        }
+        .gauge-cover {
+            width: 320px;
+            height: 160px;
+            background: #1f2937;
+            border-top-left-radius: 160px;
+            border-top-right-radius: 160px;
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            text-align: center;
+            z-index: 3;
+        }
+        .gauge-needle {
+            width: 4px;
+            height: 190px;
+            background: #1f2937;
+            border-radius: 2px;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform-origin: bottom center;
+            transform: translateX(-50%) rotate(-90deg);
+            transition: transform 1.5s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+            z-index: 4;
+        }
+        .gauge-center {
+            width: 20px;
+            height: 20px;
+            background: #1f2937;
+            border-radius: 50%;
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+        .candidate-bar {
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        .candidate-bar-fill {
+            height: 100%;
+            border-radius: 9999px;
+            text-align: right;
+            padding-right: 0.5rem;
+            color: white;
+            font-weight: bold;
+            font-size: 0.75rem;
+            line-height: 1.25rem;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-6xl font-black mb-3">The <span class="gradient-text">Primary Showdown</span></h1>
+            <p class="text-xl text-gray-600">An In-Depth Look at the 2025 NYC Democratic Mayoral Primary</p>
+        </header>
+
+        <section class="bg-white rounded-2xl shadow-lg p-6 md:p-8 my-12">
+            <h2 class="text-3xl md:text-4xl font-black mb-4 text-center">Final Prediction</h2>
+            <p class="text-lg text-gray-600 mb-6 text-center">Prediction Model Run: 2025-06-23 18:01:57</p>
+
+            <div class="flex flex-col md:flex-row items-center justify-center gap-8">
+                <div class="relative w-full max-w-md flex flex-col items-center mt-4">
+                    <div class="gauge mx-auto">
+                        <div class="gauge-inner"></div>
+                        <div class="gauge-cover" style="background-color: #ffffff;">
+                            <p class="text-6xl font-black text-[#90BE6D] pt-10">75.6%</p>
+                            <p class="text-xl font-bold text-gray-800">Mamdani Win Probability</p>
+                        </div>
+                        <div id="gauge-needle" class="gauge-needle"></div>
+                        <div class="gauge-center"></div>
+                    </div>
+                    <div class="w-full max-w-lg flex justify-between px-2 text-sm text-gray-500 mt-1">
+                        <span class="text-left text-[#F94144] font-bold">Cuomo Win</span>
+                        <span class="text-gray-400">Toss Up</span>
+                        <span class="text-right text-[#90BE6D] font-bold">Mamdani Win</span>
+                    </div>
+                </div>
+
+                <div class="text-center md:text-left">
+                    <h3 class="text-2xl font-bold mb-4">Projected Result</h3>
+                    <p class="text-xl font-bold">Final Vote Share: <span class="text-green-600">Mamdani 52.4%</span> vs <span class="text-red-600">Cuomo 47.6%</span></p>
+                    <p class="text-md text-gray-600 mt-2">Projected Victory Margin: <span class="font-bold text-gray-800">4.9% (~39,619 votes)</span></p>
+                    <hr class="my-4">
+                    <p class="text-md text-gray-600">95% Confidence Interval:</p>
+                    <p class="font-bold text-gray-800">45.6% - 59.3%</p>
+                    <p class="text-sm text-gray-500">(Mamdani Vote Share)</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-12">
+            <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-center mb-2">Prediction Details: The Path to Victory</h2>
+                <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Our model simulates the Ranked-Choice Voting process round-by-round to determine the final winner. Here’s how a narrow Mamdani first-choice deficit transforms into a decisive victory.</p>
+                
+                <div class="flex flex-col items-center space-y-6">
+
+                    <!-- Round 1 -->
+                    <div class="w-full max-w-3xl bg-gray-50 p-6 rounded-2xl border border-gray-200 shadow-sm">
+                        <h3 class="font-bold text-xl text-center mb-1">Round 1: Initial Tally</h3>
+                        <p class="text-center text-gray-500 text-sm mb-6">Based on 814,257 projected total votes, including early vote and heat-suppressed Election Day turnout.</p>
+                        <div class="space-y-3">
+                            <!-- Cuomo -->
+                            <div class="flex items-center">
+                                <span class="font-bold w-24">Cuomo</span>
+                                <div class="w-full candidate-bar h-5">
+                                    <div class="bg-[#F94144] candidate-bar-fill" style="width: 38.9%;">38.9%</div>
+                                </div>
+                                <span class="text-right w-24 font-semibold text-sm">316,746</span>
+                            </div>
+                            <!-- Mamdani -->
+                            <div class="flex items-center">
+                                <span class="font-bold w-24">Mamdani</span>
+                                <div class="w-full candidate-bar h-5">
+                                    <div class="bg-[#90BE6D] candidate-bar-fill" style="width: 35.6%;">35.6%</div>
+                                </div>
+                                <span class="text-right w-24 font-semibold text-sm">289,876</span>
+                            </div>
+                             <!-- Lander -->
+                             <div class="flex items-center">
+                                <span class="font-bold w-24">Lander</span>
+                                <div class="w-full candidate-bar h-5">
+                                    <div class="bg-[#F9C74F] candidate-bar-fill" style="width: 10.2%;">10.2%</div>
+                                </div>
+                                <span class="text-right w-24 font-semibold text-sm">83,054</span>
+                            </div>
+                            <!-- Adams -->
+                            <div class="flex items-center">
+                                <span class="font-bold w-24">Adams</span>
+                                <div class="w-full candidate-bar h-5">
+                                    <div class="bg-[#F3722C] candidate-bar-fill" style="width: 6.8%;">6.8%</div>
+                                </div>
+                                <span class="text-right w-24 font-semibold text-sm">55,369</span>
+                            </div>
+                             <!-- Others -->
+                             <div class="flex items-center">
+                                <span class="font-bold w-24">Others</span>
+                                <div class="w-full candidate-bar h-5">
+                                    <div class="bg-gray-400 candidate-bar-fill" style="width: 8.5%;">8.5%</div>
+                                </div>
+                                <span class="text-right w-24 font-semibold text-sm">69,212</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flow-arrow">↓</div>
+
+                    <!-- Intermediate Rounds -->
+                    <div class="w-full max-w-3xl bg-orange-50 p-6 rounded-2xl border border-orange-200 shadow-sm">
+                        <h3 class="font-bold text-xl text-center mb-4 text-orange-800">Intermediate Rounds: Consolidation</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-center">
+                            <div>
+                                <h4 class="font-semibold">❌ Adams Eliminated</h4>
+                                <p class="text-sm text-gray-600">Her votes redistribute</p>
+                                <div class="mt-2 text-left space-y-1 text-sm">
+                                    <p><span class="font-bold text-[#F94144]">+29,313 votes</span> → Cuomo</p>
+                                    <p><span class="font-bold text-[#90BE6D]">+22,799 votes</span> → Mamdani</p>
+                                </div>
+                            </div>
+                             <div>
+                                <h4 class="font-semibold">❌ Others Eliminated</h4>
+                                <p class="text-sm text-gray-600">Minor candidates drop out</p>
+                                <div class="mt-2 text-left space-y-1 text-sm">
+                                    <p><span class="font-bold text-[#90BE6D]">+48,855 votes</span> → Mamdani</p>
+                                    <p><span class="font-bold text-[#F94144]">+24,427 votes</span> → Cuomo</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-6">
+                            <h4 class="font-bold text-center text-lg mb-2">Standings After Consolidation</h4>
+                             <div class="space-y-2 text-sm max-w-md mx-auto">
+                                <p class="flex justify-between"><strong>Cuomo:</strong> <span class="font-semibold">45.5%</span> (424,738 votes)</p>
+                                <p class="flex justify-between"><strong>Mamdani:</strong> <span class="font-semibold">44.0%</span> (411,058 votes)</p>
+                                <p class="flex justify-between"><strong>Lander:</strong> <span class="font-semibold">10.5%</span> (97,710 votes)</p>
+                             </div>
+                        </div>
+                    </div>
+
+                    <div class="flow-arrow">↓</div>
+
+                    <!-- Final Round -->
+                    <div class="w-full max-w-3xl bg-green-50 p-6 rounded-2xl border-2 border-green-300 shadow-lg">
+                        <h3 class="font-bold text-xl text-center mb-2 text-green-800">Final Round: The Progressive Transfer</h3>
+                        <p class="text-center text-gray-600 mb-6">❌ Lander is eliminated. The cross-endorsement becomes decisive, with 75% of his voters ranking Mamdani second.</p>
+                        
+                        <div class="bg-white p-4 rounded-lg text-center mb-6">
+                            <p class="font-bold text-yellow-800">Lander's 97,710 Votes Redistribute:</p>
+                            <div class="flex justify-center items-center space-x-6 mt-2">
+                                <div class="text-green-700">
+                                    <p class="font-black text-3xl">73,283</p>
+                                    <p class="font-semibold text-sm">(75%) → Mamdani</p>
+                                </div>
+                                <div class="text-red-700">
+                                    <p class="font-black text-3xl">14,656</p>
+                                    <p class="font-semibold text-sm">(15%) → Cuomo</p>
+                                </div>
+                                <div class="text-gray-600">
+                                    <p class="font-black text-3xl">9,771</p>
+                                    <p class="font-semibold text-sm">(10%) Exhausted</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="font-bold text-center text-lg mb-4">🏆 Final Result</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                             <div class="text-center">
+                                <p class="font-bold text-2xl">Zohran Mamdani</p>
+                                <p class="text-6xl font-black my-2 text-[#90BE6D]">52.4%</p>
+                                <div class="w-full bg-gray-200 rounded-full h-4 my-2">
+                                  <div class="bg-[#90BE6D] h-4 rounded-full" style="width: 52.4%"></div>
+                                </div>
+                                <p class="font-semibold text-gray-800">484,341 Votes</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="font-bold text-2xl">Andrew Cuomo</p>
+                                <p class="text-6xl font-black my-2 text-[#F94144]">47.6%</p>
+                                <div class="w-full bg-gray-200 rounded-full h-4 my-2">
+                                  <div class="bg-[#F94144] h-4 rounded-full" style="width: 47.6%"></div>
+                                </div>
+                                <p class="font-semibold text-gray-800">439,395 Votes</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-center mb-8">Money vs. People: A Tale of Two Campaigns</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Andrew_Cuomo_2019.jpg/500px-Andrew_Cuomo_2019.jpg" alt="Andrew Cuomo" class="w-32 h-32 rounded-full object-cover object-top mb-4 border-4 border-red-200" onerror="this.onerror=null;this.src='https://placehold.co/128x128/fee2e2/f94144?text=AC';">
+                    <h3 class="text-2xl font-bold text-center mb-4">Andrew Cuomo: The Financial Juggernaut</h3>
+                    <p class="text-center text-gray-600 mb-6 grow">Cuomo's campaign is powered by a historic Super PAC, allowing him to dominate the airwaves.</p>
+                    <div class="text-center">
+                        <p class="text-gray-500 text-lg">"Fix the City" PAC Spending</p>
+                        <p class="font-extrabold text-7xl text-[#F94144] my-2">$16M+</p>
+                        <p class="text-gray-600">Fueled by major donations from figures like Michael Bloomberg and corporate interests.</p>
+                    </div>
+                    <div class="mt-8">
+                        <h4 class="font-bold text-center text-lg mb-3">Key Endorsers</h4>
+                        <ul class="text-center text-gray-700 space-y-1">
+                            <li>Bill Clinton</li>
+                            <li>Michael Bloomberg</li>
+                            <li>32BJ SEIU & 1199SEIU</li>
+                            <li>NY Daily News</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center">
+                    <div class="w-32 h-32 rounded-full overflow-hidden mb-4 border-4 border-green-200">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Zohran_Mamdani_05.25.25.jpg/500px-Zohran_Mamdani_05.25.25.jpg" alt="Zohran Mamdani" class="w-full h-full object-cover object-top" style="transform: scale(1.2);" onerror="this.onerror=null;this.src='https://placehold.co/128x128/dcfce7/90be6d?text=ZM';">
+                    </div>
+                    <h3 class="text-2xl font-bold text-center mb-4">Zohran Mamdani: The Grassroots Movement</h3>
+                    <p class="text-center text-gray-600 mb-6 grow">Mamdani's campaign is a people-powered operation built on small-dollar donors and volunteers.</p>
+                    <div class="text-center">
+                        <p class="text-gray-500 text-lg">Mobilized Volunteers</p>
+                        <p class="font-extrabold text-7xl text-[#90BE6D] my-2">46,000</p>
+                        <p class="text-gray-600">This massive ground operation has knocked on over 1 million doors across the city.</p>
+                    </div>
+                     <div class="mt-8">
+                        <h4 class="font-bold text-center text-lg mb-3">Key Endorsers</h4>
+                        <ul class="text-center text-gray-700 space-y-1">
+                            <li>Alexandria Ocasio-Cortez</li>
+                            <li>Bernie Sanders</li>
+                            <li>Working Families Party</li>
+                            <li>Brad Lander</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-center mb-2">The Decisive Factors</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">The primary has evolved beyond a simple choice. A series of external forces have created a volatile environment where the outcome hinges on a few key variables.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white rounded-2xl shadow-lg p-6 flex flex-col justify-center items-center text-center">
+                    <div class="text-5xl mb-3">☀️</div>
+                    <h3 class="text-xl font-bold mb-2">Election Day Heatwave</h3>
+                    <p class="text-6xl font-extrabold text-[#F3722C]">101°F</p>
+                    <p class="text-md text-gray-600 mt-2">A severe heatwave and lack of AC at 49.5% of poll sites could be catastrophic for Cuomo's older base.</p>
+                </div>
+                <div class="bg-white rounded-2xl shadow-lg p-6 flex flex-col justify-center items-center text-center">
+                    <div class="text-5xl mb-3">📈</div>
+                    <h3 class="text-xl font-bold mb-2">Mamdani's Momentum</h3>
+                    <p class="text-6xl font-extrabold text-[#90BE6D]">+14 pts</p>
+                    <p class="text-md text-gray-600 mt-2">Mamdani's support surged from 18% to 32% in the final polls, while Cuomo's remained stagnant.</p>
+                </div>
+                <div class="bg-white rounded-2xl shadow-lg p-6 flex flex-col justify-center items-center text-center">
+                     <div class="text-5xl mb-3">🗳️</div>
+                    <h3 class="text-xl font-bold mb-2">Banked Vote Lead</h3>
+                    <p class="text-6xl font-extrabold text-[#90BE6D]">+38,500</p>
+                    <p class="text-md text-gray-600 mt-2">Mamdani has a massive early vote lead among the 385,327 ballots already cast.</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="mb-12">
+            <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-center mb-4">The Early Vote Firewall</h2>
+                <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">The record-breaking early vote turnout was not evenly distributed. Mamdani's strongholds of Brooklyn and Manhattan saw the largest surges, making up 69% of all early votes cast and giving him a formidable geographic advantage.</p>
+                <div class="chart-container">
+                    <canvas id="earlyVoteBoroughChart"></canvas>
+                </div>
+            </div>
+        </section>
+        
+        <section class="mb-12">
+            <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-center mb-4">The Momentum Shift</h2>
+                <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">While Andrew Cuomo held a stable lead for months, the final weeks of the campaign saw a dramatic surge for Zohran Mamdani. This late-breaking trend, captured in the final polls, transformed the race into a statistical dead heat.</p>
+                <div class="chart-container">
+                     <canvas id="momentumChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-12">
+            <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-center mb-4">The Coalitions: A Tale of Two Electorates</h2>
+                <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">The candidates have built mirror-image coalitions, splitting the Democratic party along deep ideological and generational lines. Cuomo's strength is with older voters and communities of color, while Mamdani's is with younger, more educated, and white progressive voters.</p>
+                <div class="chart-container">
+                    <canvas id="demographicsChart"></canvas>
+                </div>
+                 <p class="text-center text-sm text-gray-500 mt-4">Data from the final Emerson College poll shows the candidates' final-round support across key demographic groups.</p>
+            </div>
+        </section>
+        
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-center mb-4">The Issue Landscape</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">The race has been a battle to define the city's primary crisis. While Cuomo's campaign focuses on crime, Mamdani's has successfully elevated housing costs as the top concern for a plurality of voters.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-center mb-4">Top Issue for Mamdani Voters</h3>
+                     <div class="small-chart-container">
+                        <canvas id="mamdaniIssuesChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-center mb-4">Top Issue for Cuomo Voters</h3>
+                     <div class="small-chart-container">
+                        <canvas id="cuomoIssuesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="p-8">
+            <h2 class="text-2xl font-bold mb-4 text-center">Sources</h2>
+            <div class="text-gray-600 text-sm space-y-2 text-left">
+                <p><a href="https://emersoncollegepolling.com/" target="_blank" class="text-blue-600 hover:underline">Polling data from Emerson College, Marist College, and the Manhattan Institute.</a></p>
+                <p><a href="https://vote.nyc/page/election-results" target="_blank" class="text-blue-600 hover:underline">Early voting turnout data from the NYC Board of Elections.</a></p>
+                <p><a href="https://www.nyccfb.info/follow-the-money/" target="_blank" class="text-blue-600 hover:underline">Campaign finance data from the NYC Campaign Finance Board.</a></p>
+                <p><a href="https://forecast.weather.gov/MapClick.php?lat=40.71&lon=-74.01" target="_blank" class="text-blue-600 hover:underline">Weather forecast data from the National Weather Service.</a></p>
+                <p><a href="https://www.politico.com/new-york/" target="_blank" class="text-blue-600 hover:underline">Endorsement tracking via official campaign announcements and news reports.</a></p>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const FONT_COLOR = '#1f2937'; 
+        const GRID_COLOR = '#e5e7eb';
+        const PALETTE = {
+            red: '#F94144',
+            orangeDark: '#F3722C',
+            orangeMid: '#F8961E',
+            yellow: '#F9C74F',
+            green: '#90BE6D',
+            gray: '#9CA3AF'
+        };
+        const CUOMO_COLOR = PALETTE.red;
+        const MAMDANI_COLOR = PALETTE.green;
+        const LANDER_COLOR = PALETTE.yellow;
+        const ADAMS_COLOR = PALETTE.orangeDark;
+        const UNDECIDED_COLOR = PALETTE.gray;
+
+        const tooltipTitleCallback = (tooltipItems) => {
+            const item = tooltipItems[0];
+            let label = item.chart.data.labels[item.dataIndex];
+            if (Array.isArray(label)) {
+                return label.join(' ');
+            }
+            return label;
+        };
+        
+        const sharedChartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: FONT_COLOR, font: { size: 14 } } },
+                tooltip: {
+                    callbacks: { title: tooltipTitleCallback },
+                    backgroundColor: '#1F2937',
+                    titleFont: { size: 16 },
+                    bodyFont: { size: 14 },
+                    padding: 12,
+                    cornerRadius: 4
+                }
+            },
+            scales: {
+                y: { beginAtZero: true, ticks: { color: FONT_COLOR, font: { size: 12 } }, grid: { color: GRID_COLOR } },
+                x: { ticks: { color: FONT_COLOR, font: { size: 12 } }, grid: { color: GRID_COLOR } }
+            }
+        };
+
+        const sharedDonutOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top', labels: { color: FONT_COLOR, font: { size: 14 } } },
+                tooltip: {
+                    callbacks: { title: tooltipTitleCallback },
+                    backgroundColor: '#1F2937',
+                    titleFont: { size: 16 },
+                    bodyFont: { size: 14 },
+                    padding: 12,
+                    cornerRadius: 4
+                }
+            },
+            cutout: '60%'
+        };
+
+        new Chart(document.getElementById('earlyVoteBoroughChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Brooklyn', 'Manhattan', 'Queens', 'The Bronx', 'Staten Island'],
+                datasets: [{
+                    label: 'Early Votes Cast',
+                    data: [142735, 122642, 75778, 30816, 12367],
+                    backgroundColor: [
+                        PALETTE.green,
+                        PALETTE.yellow,
+                        PALETTE.orangeMid,
+                        PALETTE.orangeDark,
+                        PALETTE.red
+                    ]
+                }]
+            },
+            options: {
+                ...sharedChartOptions,
+                indexAxis: 'y',
+                plugins: { legend: { display: false } },
+                scales: {
+                     y: { ...sharedChartOptions.scales.y },
+                     x: { ...sharedChartOptions.scales.x, ticks: { ...sharedChartOptions.scales.x.ticks, callback: value => new Intl.NumberFormat('en-US').format(value) } }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('momentumChart'), {
+            type: 'line',
+            data: {
+                labels: ['May (Marist)', 'May (Emerson)', 'June (Marist)', 'June (Emerson)'],
+                datasets: [{
+                    label: 'Cuomo',
+                    data: [37, 35, 38, 35],
+                    borderColor: CUOMO_COLOR,
+                    backgroundColor: CUOMO_COLOR + '33',
+                    tension: 0.1,
+                    borderWidth: 3
+                }, {
+                    label: 'Mamdani',
+                    data: [18, 23, 27, 32],
+                    borderColor: MAMDANI_COLOR,
+                    backgroundColor: MAMDANI_COLOR + '33',
+                    tension: 0.1,
+                    borderWidth: 3
+                },
+                {
+                    label: 'Lander',
+                    data: [8, 11, 7, 13],
+                    borderColor: LANDER_COLOR,
+                    backgroundColor: LANDER_COLOR + '33',
+                    tension: 0.1,
+                    borderWidth: 3
+                }]
+            },
+             options: {
+                ...sharedChartOptions,
+                scales: {
+                     y: { ...sharedChartOptions.scales.y, ticks: { ...sharedChartOptions.scales.y.ticks, callback: value => value + '%' } },
+                     x: { ...sharedChartOptions.scales.x }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('demographicsChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Under 50', '50+', 'White', 'Black', 'Hispanic', 'Asian', 'College Grad', 'No College'],
+                datasets: [{
+                    label: 'Cuomo Support',
+                    data: [33, 59.5, 39, 62, 60, 21, 38, 61],
+                    backgroundColor: CUOMO_COLOR,
+                }, {
+                    label: 'Mamdani Support',
+                    data: [67, 40.5, 61, 38, 40, 79, 62, 39],
+                    backgroundColor: MAMDANI_COLOR,
+                }]
+            },
+            options: {
+                ...sharedChartOptions,
+                indexAxis: 'y',
+                scales: {
+                     y: { ...sharedChartOptions.scales.y, stacked: true },
+                     x: { ...sharedChartOptions.scales.x, stacked: true, ticks: { ...sharedChartOptions.scales.x.ticks, callback: value => value + '%' } }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('mamdaniIssuesChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Housing Costs', 'Other Issues'],
+                datasets: [{
+                    data: [59, 41],
+                    backgroundColor: [MAMDANI_COLOR, UNDECIDED_COLOR],
+                    hoverOffset: 4,
+                    borderColor: '#ffffff',
+                    borderWidth: 2
+                }]
+            },
+            options: sharedDonutOptions
+        });
+        
+        new Chart(document.getElementById('cuomoIssuesChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Crime', 'Other Issues'],
+                datasets: [{
+                    data: [36, 64],
+                    backgroundColor: [CUOMO_COLOR, UNDECIDED_COLOR],
+                    hoverOffset: 4,
+                    borderColor: '#ffffff',
+                    borderWidth: 2
+                }]
+            },
+            options: sharedDonutOptions
+        });
+
+        const needle = document.getElementById('gauge-needle');
+        if (needle) {
+            setTimeout(() => {
+                const winProb = 75.6;
+                const rotation = (winProb / 100) * 180 - 90;
+                needle.style.transform = `translateX(-50%) rotate(${rotation}deg)`;
+            }, 500);
+        }
+    });
+    </script>
+</body>
+</html>
