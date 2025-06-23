@@ -155,6 +155,82 @@
 
         <section class="mb-12">
             <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-center mb-2">Prediction Model: Key Inputs</h2>
+                <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Our model's final prediction is a synthesis of traditional inputs and dynamic, real-world factors. Here’s a look at the most influential variables shaping the outcome.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mt-6">
+
+                    <!-- Early Vote & Youth Surge -->
+                    <div class="bg-green-50 p-6 rounded-xl border border-green-200 flex flex-col">
+                        <div class="flex items-center mb-3">
+                            <div class="text-4xl mr-4">🗳️</div>
+                            <h3 class="font-bold text-xl text-green-800">Early Vote & Youth Surge</h3>
+                        </div>
+                        <p class="text-green-700 mb-4">Mamdani banked a formidable lead in early voting, supercharged by an unprecedented youth turnout.</p>
+                        <div class="text-center bg-white p-4 rounded-lg flex-grow flex flex-col justify-center">
+                            <p class="text-5xl font-extrabold text-green-600">+39,796</p>
+                            <p class="font-semibold text-gray-700">Mamdani's Net Vote Advantage</p>
+                            <p class="text-sm text-gray-500 mt-2">from 385,327 total early votes</p>
+                        </div>
+                        <div class="text-center bg-white p-4 rounded-lg mt-3 flex-grow flex flex-col justify-center">
+                            <p class="text-5xl font-extrabold text-green-600">2.9x</p>
+                            <p class="font-semibold text-gray-700">Youth Vote vs. Historical Rate</p>
+                            <p class="text-sm text-gray-500 mt-2">A key indicator of grassroots enthusiasm</p>
+                        </div>
+                    </div>
+
+                    <!-- Heatwave Impact -->
+                    <div class="bg-red-50 p-6 rounded-xl border border-red-200 flex flex-col">
+                        <div class="flex items-center mb-3">
+                            <div class="text-4xl mr-4">🌡️</div>
+                            <h3 class="font-bold text-xl text-red-800">Election Day Heatwave</h3>
+                        </div>
+                        <p class="text-red-700 mb-4">A brutal heatwave is projected to disproportionately suppress Cuomo's older base, a critical demographic for his E-Day performance.</p>
+                        <div class="text-center bg-white p-4 rounded-lg flex-grow flex flex-col justify-center">
+                            <p class="text-5xl font-extrabold text-red-600">101°F</p>
+                            <p class="font-semibold text-gray-700">Forecasted High Temperature</p>
+                            <p class="text-sm text-gray-500 mt-2">with 49.5% of poll sites lacking AC</p>
+                        </div>
+                        <div class="text-center bg-white p-4 rounded-lg mt-3 flex-grow flex flex-col justify-center">
+                            <p class="text-5xl font-extrabold text-red-600">-45%</p>
+                            <p class="font-semibold text-gray-700">Turnout Reduction for 65+</p>
+                            <p class="text-sm text-gray-500 mt-2">vs. only -5% for voters under 35</p>
+                        </div>
+                    </div>
+
+                    <!-- Campaign Momentum -->
+                    <div class="bg-blue-50 p-6 rounded-xl border border-blue-200 flex flex-col">
+                        <div class="flex items-center mb-3">
+                            <div class="text-4xl mr-4">📈</div>
+                            <h3 class="font-bold text-xl text-blue-800">Campaign Momentum</h3>
+                        </div>
+                        <p class="text-blue-700 mb-4">Polling trends in the final weeks provided a significant tailwind for the Mamdani campaign, helping to close the gap with Cuomo.</p>
+                        <div class="text-center bg-white p-4 rounded-lg flex-grow flex flex-col justify-center">
+                            <p class="text-5xl font-extrabold text-blue-600">+2.5%</p>
+                            <p class="font-semibold text-gray-700">Momentum Boost</p>
+                            <p class="text-sm text-gray-500 mt-2">Added to Mamdani's first-choice vote share based on polling trends.</p>
+                        </div>
+                    </div>
+
+                    <!-- RCV Dynamics -->
+                    <div class="bg-yellow-50 p-6 rounded-xl border border-yellow-200 flex flex-col">
+                        <div class="flex items-center mb-3">
+                            <div class="text-4xl mr-4">🤝</div>
+                            <h3 class="font-bold text-xl text-yellow-800">RCV Dynamics</h3>
+                        </div>
+                        <p class="text-yellow-700 mb-4">The Ranked-Choice Voting system is poised to benefit Mamdani, thanks to a strong progressive alliance.</p>
+                        <div class="text-center bg-white p-4 rounded-lg flex-grow flex flex-col justify-center">
+                            <p class="text-5xl font-extrabold text-yellow-600">75%</p>
+                            <p class="font-semibold text-gray-700">Lander-to-Mamdani Transfers</p>
+                            <p class="text-sm text-gray-500 mt-2">This is the key that unlocks a final-round victory for Mamdani in our simulation.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-12">
+            <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
                 <h2 class="text-3xl font-bold text-center mb-2">Prediction Details: The Path to Victory</h2>
                 <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Our model simulates the Ranked-Choice Voting process round-by-round to determine the final winner. Here’s how a narrow Mamdani first-choice deficit transforms into a decisive victory.</p>
                 
@@ -356,7 +432,7 @@
                 <div class="bg-white rounded-2xl shadow-lg p-6 flex flex-col justify-center items-center text-center">
                      <div class="text-5xl mb-3">🗳️</div>
                     <h3 class="text-xl font-bold mb-2">Banked Vote Lead</h3>
-                    <p class="text-6xl font-extrabold text-[#90BE6D]">+38,500</p>
+                    <p class="text-6xl font-extrabold text-[#90BE6D]">+39,796</p>
                     <p class="text-md text-gray-600 mt-2">Mamdani has a massive early vote lead among the 385,327 ballots already cast.</p>
                 </div>
             </div>
