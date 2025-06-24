@@ -7,14 +7,14 @@
     
     <!-- Primary Meta Tags -->
     <meta name="title" content="NYC Democratic Primary 2025: Mamdani vs Cuomo - Final Prediction">
-    <meta name="description" content="Zohran Mamdani has a 75.6% chance of defeating Andrew Cuomo in the 2025 NYC Democratic mayoral primary. See our comprehensive analysis of early voting, polling trends, and the decisive factors.">
+    <meta name="description" content="Live prediction model for the 2025 NYC Democratic mayoral primary. See our comprehensive analysis of early voting, polling trends, and the decisive factors.">
     <meta name="keywords" content="NYC Primary 2025, Zohran Mamdani, Andrew Cuomo, NYC Mayor Election, Democratic Primary, Election Prediction, NYC Politics">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://elections.cosmicolabs.com/">
     <meta property="og:title" content="NYC Democratic Primary 2025: Mamdani vs Cuomo - Final Prediction">
-    <meta property="og:description" content="Zohran Mamdani has a 75.6% chance of defeating Andrew Cuomo in the 2025 NYC Democratic mayoral primary. See our comprehensive analysis of early voting, polling trends, and the decisive factors.">
+    <meta property="og:description" content="Live prediction model for the 2025 NYC Democratic mayoral primary. See our comprehensive analysis of early voting, polling trends, and the decisive factors.">
     <meta property="og:image" content="https://elections.cosmicolabs.com/winprob.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -24,7 +24,7 @@
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://elections.cosmicolabs.com/">
     <meta property="twitter:title" content="NYC Democratic Primary 2025: Mamdani vs Cuomo - Final Prediction">
-    <meta property="twitter:description" content="Zohran Mamdani has a 75.6% chance of defeating Andrew Cuomo in the 2025 NYC Democratic mayoral primary. See our comprehensive analysis.">
+    <meta property="twitter:description" content="Live prediction model for the 2025 NYC Democratic mayoral primary. See our comprehensive analysis.">
     <meta property="twitter:image" content="https://elections.cosmicolabs.com/winprob.png">
     
     <!-- Favicon and App Icons -->
@@ -40,7 +40,7 @@
       "@context": "https://schema.org",
       "@type": "WebPage",
       "name": "NYC Democratic Primary 2025: Mamdani vs Cuomo - Final Prediction",
-      "description": "Zohran Mamdani has a 75.6% chance of defeating Andrew Cuomo in the 2025 NYC Democratic mayoral primary. Comprehensive analysis of early voting, polling trends, and decisive factors.",
+      "description": "Live prediction model for the 2025 NYC Democratic mayoral primary. Comprehensive analysis of early voting, polling trends, and decisive factors.",
       "url": "https://elections.cosmicolabs.com/",
       "datePublished": "2025-06-23",
       "dateModified": "2025-06-23",
@@ -219,6 +219,14 @@
             line-height: 1.25rem;
             white-space: nowrap;
         }
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .5;
+            }
+        }
     </style>
 </head>
 <body class="text-gray-800">
@@ -232,14 +240,14 @@
 
         <section class="bg-white rounded-2xl shadow-lg p-6 md:p-8 my-12">
             <h2 class="text-3xl md:text-4xl font-black mb-4 text-center">Final Prediction</h2>
-            <p class="text-lg text-gray-600 mb-6 text-center">Prediction Model Run: 2025-06-23 18:01:57 ET</p>
+            <p class="text-lg text-gray-600 mb-6 text-center">Prediction Model Run: <span id="model-timestamp">Loading...</span></p>
 
             <div class="flex flex-col md:flex-row items-center justify-center gap-8">
                 <div class="relative w-full max-w-md flex flex-col items-center mt-4">
                     <div class="gauge mx-auto">
                         <div class="gauge-inner"></div>
                         <div class="gauge-cover">
-                            <p class="gauge-value">75.6%</p>
+                            <p class="gauge-value" id="win-probability">--</p>
                             <p class="gauge-label">Mamdani Win Probability</p>
                         </div>
                         <div id="gauge-needle" class="gauge-needle"></div>
@@ -254,12 +262,8 @@
 
                 <div class="text-center md:text-left">
                     <h3 class="text-2xl font-bold mb-4">Projected Result</h3>
-                    <p class="text-xl font-bold">Final Vote Share: <span class="text-blue-600">Mamdani 52.4%</span> vs <span class="text-red-600">Cuomo 47.6%</span></p>
-                    <p class="text-md text-gray-600 mt-2">Projected Victory Margin: <span class="font-bold text-gray-800">4.9% (~39,619 votes)</span></p>
-                    <hr class="my-4">
-                    <p class="text-md text-gray-600">95% Confidence Interval:</p>
-                    <p class="font-bold text-gray-800">45.6% - 59.3%</p>
-                    <p class="text-sm text-gray-500">(Mamdani Vote Share)</p>
+                    <p class="text-xl font-bold">Final Vote Share: <span class="text-blue-600" id="mamdani-vote-share">--</span> vs <span class="text-red-600" id="cuomo-vote-share">--</span></p>
+                    <p class="text-md text-gray-600 mt-2">Projected Victory Margin: <span class="font-bold text-gray-800" id="victory-margin">--</span></p>
                 </div>
             </div>
         </section>
@@ -267,7 +271,7 @@
         <section class="mb-12">
             <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
                 <h2 class="text-3xl font-bold text-center mb-2">Prediction Model: Key Inputs</h2>
-                <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Our model's final prediction is a synthesis of traditional inputs and dynamic, real-world factors. Here’s a look at the most influential variables shaping the outcome.</p>
+                <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Our model's final prediction is a synthesis of traditional inputs and dynamic, real-world factors. Here's a look at the most influential variables shaping the outcome.</p>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mt-6">
 
@@ -279,12 +283,12 @@
                         </div>
                         <p class="text-blue-700 mb-4">Mamdani banked a formidable lead in early voting, supercharged by an unprecedented youth turnout.</p>
                         <div class="text-center bg-white p-4 rounded-lg flex-grow flex flex-col justify-center">
-                            <p class="text-5xl font-extrabold text-blue-600">+39,796</p>
+                            <p class="text-5xl font-extrabold text-blue-600" id="early-vote-advantage">--</p>
                             <p class="font-semibold text-gray-700">Mamdani's Net Vote Advantage</p>
-                            <p class="text-sm text-gray-500 mt-2">from 385,327 total early votes</p>
+                            <p class="text-sm text-gray-500 mt-2">from <span id="total-early-votes">--</span> total early votes</p>
                         </div>
                         <div class="text-center bg-white p-4 rounded-lg mt-3 flex-grow flex flex-col justify-center">
-                            <p class="text-5xl font-extrabold text-blue-600">2.9x</p>
+                            <p class="text-5xl font-extrabold text-blue-600" id="youth-surge">--</p>
                             <p class="font-semibold text-gray-700">Youth Vote vs. Historical Rate</p>
                             <p class="text-sm text-gray-500 mt-2">A key indicator of grassroots enthusiasm</p>
                         </div>
@@ -298,14 +302,14 @@
                         </div>
                         <p class="text-red-700 mb-4">A brutal heatwave is projected to disproportionately suppress Cuomo's older base, a critical demographic for his E-Day performance.</p>
                         <div class="text-center bg-white p-4 rounded-lg flex-grow flex flex-col justify-center">
-                            <p class="text-5xl font-extrabold text-red-600">101°F</p>
+                            <p class="text-5xl font-extrabold text-red-600" id="temperature">--</p>
                             <p class="font-semibold text-gray-700">Forecasted High Temperature</p>
-                            <p class="text-sm text-gray-500 mt-2">with 49.5% of poll sites lacking AC</p>
+                            <p class="text-sm text-gray-500 mt-2">with <span id="no-ac-percentage">--</span> of poll sites lacking AC</p>
                         </div>
                         <div class="text-center bg-white p-4 rounded-lg mt-3 flex-grow flex flex-col justify-center">
-                            <p class="text-5xl font-extrabold text-red-600">-45%</p>
+                            <p class="text-5xl font-extrabold text-red-600" id="senior-suppression">--</p>
                             <p class="font-semibold text-gray-700">Turnout Reduction for 65+</p>
-                            <p class="text-sm text-gray-500 mt-2">vs. only -5% for voters under 35</p>
+                            <p class="text-sm text-gray-500 mt-2">vs. only <span id="youth-suppression">--</span> for voters under 35</p>
                         </div>
                     </div>
 
@@ -317,9 +321,9 @@
                         </div>
                         <p class="text-blue-700 mb-4">Polling trends in the final weeks provided a significant tailwind for the Mamdani campaign, helping to close the gap with Cuomo.</p>
                         <div class="text-center bg-white p-4 rounded-lg flex-grow flex flex-col justify-center">
-                            <p class="text-5xl font-extrabold text-blue-600">+2.5%</p>
-                            <p class="font-semibold text-gray-700">Momentum Boost</p>
-                            <p class="text-sm text-gray-500 mt-2">Added to Mamdani's first-choice vote share based on polling trends.</p>
+                            <p class="text-5xl font-extrabold text-blue-600">+1.5%</p>
+                            <p class="font-semibold text-gray-700">Momentum Shift</p>
+                            <p class="text-sm text-gray-500 mt-2">Voters shifting from Cuomo to Mamdani based on polling trends.</p>
                         </div>
                     </div>
 
@@ -343,137 +347,37 @@
         <section class="mb-12">
             <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
                 <h2 class="text-3xl font-bold text-center mb-2">Prediction Details: The Path to Victory</h2>
-                <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Our model simulates the Ranked-Choice Voting process round-by-round to determine the final winner. Here’s how a narrow Mamdani first-choice deficit transforms into a decisive victory.</p>
+                <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Our model simulates the Ranked-Choice Voting process round-by-round to determine the final winner. Here's how a narrow Mamdani first-choice deficit transforms into a decisive victory.</p>
                 
-                <div class="flex flex-col items-center space-y-6">
-
-                    <!-- Round 1 -->
-                    <div class="w-full max-w-3xl bg-gray-50 p-6 rounded-2xl border border-gray-200 shadow-sm">
-                        <h3 class="font-bold text-xl text-center mb-1">Round 1: Initial Tally</h3>
-                        <p class="text-center text-gray-500 text-sm mb-6">Based on 814,257 projected total votes, including early vote and heat-suppressed Election Day turnout.</p>
-                        <div class="space-y-3">
-                            <!-- Cuomo -->
-                            <div class="flex items-center">
-                                <span class="font-bold w-24">Cuomo</span>
-                                <div class="w-full candidate-bar h-5">
-                                    <div class="bg-[#F94144] candidate-bar-fill" style="width: 38.9%;">38.9%</div>
-                                </div>
-                                <span class="text-right w-24 font-semibold text-sm">316,746</span>
-                            </div>
-                            <!-- Mamdani -->
-                            <div class="flex items-center">
-                                <span class="font-bold w-24">Mamdani</span>
-                                <div class="w-full candidate-bar h-5">
-                                    <div class="bg-[#3b82f6] candidate-bar-fill" style="width: 35.6%;">35.6%</div>
-                                </div>
-                                <span class="text-right w-24 font-semibold text-sm">289,876</span>
-                            </div>
-                             <!-- Lander -->
-                             <div class="flex items-center">
-                                <span class="font-bold w-24">Lander</span>
-                                <div class="w-full candidate-bar h-5">
-                                    <div class="bg-[#F9C74F] candidate-bar-fill" style="width: 10.2%;">10.2%</div>
-                                </div>
-                                <span class="text-right w-24 font-semibold text-sm">83,054</span>
-                            </div>
-                            <!-- Adams -->
-                            <div class="flex items-center">
-                                <span class="font-bold w-24">Adams</span>
-                                <div class="w-full candidate-bar h-5">
-                                    <div class="bg-[#F3722C] candidate-bar-fill" style="width: 6.8%;">6.8%</div>
-                                </div>
-                                <span class="text-right w-24 font-semibold text-sm">55,369</span>
-                            </div>
-                             <!-- Others -->
-                             <div class="flex items-center">
-                                <span class="font-bold w-24">Others</span>
-                                <div class="w-full candidate-bar h-5">
-                                    <div class="bg-gray-400 candidate-bar-fill" style="width: 8.5%;">8.5%</div>
-                                </div>
-                                <span class="text-right w-24 font-semibold text-sm">69,212</span>
-                            </div>
+                <div class="flex flex-col items-center space-y-6" id="rcv-simulation">
+                    <div class="text-gray-600">Loading RCV simulation...</div>
+                </div>
+                
+                <div class="mt-12 pt-8 border-t border-gray-200">
+                    <h3 class="text-2xl font-bold text-center mb-4">Model Uncertainty Analysis</h3>
+                    <p class="text-center text-gray-600 max-w-2xl mx-auto mb-6">Our model runs 1,000 simulations to capture all sources of uncertainty and provide a realistic range of possible outcomes.</p>
+                    <div class="bg-gray-50 rounded-xl p-6 max-w-2xl mx-auto">
+                        <div class="text-center">
+                            <p class="text-lg text-gray-600 mb-2">95% Confidence Interval</p>
+                            <p class="text-4xl font-bold text-gray-800 mb-3" id="prediction-interval">--</p>
+                            <p class="text-sm text-gray-500">Based on <span id="monte-carlo-iterations">--</span> Monte Carlo simulations</p>
                         </div>
-                    </div>
-
-                    <div class="flow-arrow">↓</div>
-
-                    <!-- Intermediate Rounds -->
-                    <div class="w-full max-w-3xl bg-orange-50 p-6 rounded-2xl border border-orange-200 shadow-sm">
-                        <h3 class="font-bold text-xl text-center mb-4 text-orange-800">Intermediate Rounds: Consolidation</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-center">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-200 text-sm">
                             <div>
-                                <h4 class="font-semibold">❌ Adams Eliminated</h4>
-                                <p class="text-sm text-gray-600">Her votes redistribute</p>
-                                <div class="mt-2 text-left space-y-1 text-sm">
-                                    <p><span class="font-bold text-[#F94144]">+29,313 votes</span> → Cuomo</p>
-                                    <p><span class="font-bold text-[#3b82f6]">+22,799 votes</span> → Mamdani</p>
-                                </div>
+                                <p class="font-semibold text-gray-700 mb-1">Sources of Uncertainty:</p>
+                                <ul class="text-gray-600 text-left space-y-1">
+                                    <li>• Polling error (±3.5%)</li>
+                                    <li>• Early vote split (±5%)</li>
+                                    <li>• RCV transfers (±10%)</li>
+                                    <li>• Heat impact (±10%)</li>
+                                </ul>
                             </div>
-                             <div>
-                                <h4 class="font-semibold">❌ Others Eliminated</h4>
-                                <p class="text-sm text-gray-600">Minor candidates drop out</p>
-                                <div class="mt-2 text-left space-y-1 text-sm">
-                                    <p><span class="font-bold text-[#3b82f6]">+48,855 votes</span> → Mamdani</p>
-                                    <p><span class="font-bold text-[#F94144]">+24,427 votes</span> → Cuomo</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mt-6">
-                            <h4 class="font-bold text-center text-lg mb-2">Standings After Consolidation</h4>
-                             <div class="space-y-2 text-sm max-w-md mx-auto">
-                                <p class="flex justify-between"><strong>Cuomo:</strong> <span class="font-semibold">45.5%</span> (424,738 votes)</p>
-                                <p class="flex justify-between"><strong>Mamdani:</strong> <span class="font-semibold">44.0%</span> (411,058 votes)</p>
-                                <p class="flex justify-between"><strong>Lander:</strong> <span class="font-semibold">10.5%</span> (97,710 votes)</p>
-                             </div>
-                        </div>
-                    </div>
-
-                    <div class="flow-arrow">↓</div>
-
-                    <!-- Final Round -->
-                    <div class="w-full max-w-3xl bg-blue-50 p-6 rounded-2xl border-2 border-blue-300 shadow-lg">
-                        <h3 class="font-bold text-xl text-center mb-2 text-blue-800">Final Round: The Progressive Transfer</h3>
-                        <p class="text-center text-gray-600 mb-6">❌ Lander is eliminated. The cross-endorsement becomes decisive, with 75% of his voters ranking Mamdani second.</p>
-                        
-                        <div class="bg-white p-4 rounded-lg text-center mb-6">
-                            <p class="font-bold text-yellow-800">Lander's 97,710 Votes Redistribute:</p>
-                            <div class="flex justify-center items-center space-x-6 mt-2">
-                                <div class="text-blue-700">
-                                    <p class="font-black text-3xl">73,283</p>
-                                    <p class="font-semibold text-sm">(75%) → Mamdani</p>
-                                </div>
-                                <div class="text-red-700">
-                                    <p class="font-black text-3xl">14,656</p>
-                                    <p class="font-semibold text-sm">(15%) → Cuomo</p>
-                                </div>
-                                <div class="text-gray-600">
-                                    <p class="font-black text-3xl">9,771</p>
-                                    <p class="font-semibold text-sm">(10%) Exhausted</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <h4 class="font-bold text-center text-lg mb-4">🏆 Final Result</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                             <div class="text-center">
-                                <p class="font-bold text-2xl">Zohran Mamdani</p>
-                                <p class="text-6xl font-black my-2 text-[#3b82f6]">52.4%</p>
-                                <div class="w-full bg-gray-200 rounded-full h-4 my-2">
-                                  <div class="bg-[#3b82f6] h-4 rounded-full" style="width: 52.4%"></div>
-                                </div>
-                                <p class="font-semibold text-gray-800">484,341 Votes</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="font-bold text-2xl">Andrew Cuomo</p>
-                                <p class="text-6xl font-black my-2 text-[#F94144]">47.6%</p>
-                                <div class="w-full bg-gray-200 rounded-full h-4 my-2">
-                                  <div class="bg-[#F94144] h-4 rounded-full" style="width: 47.6%"></div>
-                                </div>
-                                <p class="font-semibold text-gray-800">439,395 Votes</p>
+                            <div>
+                                <p class="font-semibold text-gray-700 mb-1">What this means:</p>
+                                <p class="text-gray-600 text-left">If the election were held 100 times, we'd expect Mamdani's vote share to fall within this range 95 times.</p>
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
         </section>
@@ -531,8 +435,8 @@
                 <div class="bg-white rounded-2xl shadow-lg p-6 flex flex-col justify-center items-center text-center">
                     <div class="text-5xl mb-3">☀️</div>
                     <h3 class="text-xl font-bold mb-2">Election Day Heatwave</h3>
-                    <p class="text-6xl font-extrabold text-[#F3722C]">101°F</p>
-                    <p class="text-md text-gray-600 mt-2">A severe heatwave and lack of AC at 49.5% of poll sites could be catastrophic for Cuomo's older base.</p>
+                    <p class="text-6xl font-extrabold text-[#F3722C]" id="heat-index">--</p>
+                    <p class="text-md text-gray-600 mt-2">A severe heatwave and lack of AC at <span id="no-ac-sites">--</span> of poll sites could be catastrophic for Cuomo's older base.</p>
                 </div>
                 <div class="bg-white rounded-2xl shadow-lg p-6 flex flex-col justify-center items-center text-center">
                     <div class="text-5xl mb-3">📈</div>
@@ -543,8 +447,8 @@
                 <div class="bg-white rounded-2xl shadow-lg p-6 flex flex-col justify-center items-center text-center">
                      <div class="text-5xl mb-3">🗳️</div>
                     <h3 class="text-xl font-bold mb-2">Banked Vote Lead</h3>
-                    <p class="text-6xl font-extrabold text-[#3b82f6]">+39,796</p>
-                    <p class="text-md text-gray-600 mt-2">Mamdani has a massive early vote lead among the 385,327 ballots already cast.</p>
+                    <p class="text-6xl font-extrabold text-[#3b82f6]" id="banked-lead">--</p>
+                    <p class="text-md text-gray-600 mt-2">Mamdani has a massive early vote lead among the <span id="early-vote-total">--</span> ballots already cast.</p>
                 </div>
             </div>
         </section>
@@ -598,6 +502,7 @@
                 </div>
             </div>
         </section>
+
         
         <section class="p-8">
             <h2 class="text-2xl font-bold mb-4 text-center">Sources</h2>
@@ -614,7 +519,190 @@
     </div>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    // Global model data variable
+    let modelData = null;
+    
+    // Load model data from JSON
+    async function loadModelData() {
+        try {
+            const response = await fetch('model_results.json');
+            if (!response.ok) {
+                throw new Error('Failed to load model data');
+            }
+            modelData = await response.json();
+            updatePageWithData();
+        } catch (error) {
+            console.error('Error loading model data:', error);
+            // Fallback to static values if JSON fails to load
+            document.getElementById('model-timestamp').textContent = 'Data unavailable';
+            document.getElementById('rcv-simulation').innerHTML = '<div class="text-gray-600">Data unavailable</div>';
+        }
+    }
+    
+    // Format numbers with commas
+    function formatNumber(num) {
+        return new Intl.NumberFormat('en-US').format(num);
+    }
+    
+    // Format datetime
+    function formatDateTime(isoString) {
+        const date = new Date(isoString);
+        return date.toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            timeZoneName: 'short'
+        });
+    }
+    
+    // Update page elements with model data
+    function updatePageWithData() {
+        if (!modelData) return;
+        
+        // Update timestamp
+        document.getElementById('model-timestamp').textContent = formatDateTime(modelData.timestamp);
+        
+        // Update main prediction
+        document.getElementById('win-probability').textContent = modelData.summary.mamdani_win_probability + '%';
+        document.getElementById('mamdani-vote-share').textContent = `Mamdani ${modelData.summary.mamdani_vote_share}%`;
+        document.getElementById('cuomo-vote-share').textContent = `Cuomo ${modelData.summary.cuomo_vote_share}%`;
+        document.getElementById('victory-margin').textContent = 
+            `${modelData.summary.margin_percentage}% (~${formatNumber(modelData.summary.margin_votes)} votes)`;
+        
+        // Update early voting stats
+        document.getElementById('early-vote-advantage').textContent = 
+            `+${formatNumber(modelData.early_voting.mamdani_advantage)}`;
+        document.getElementById('total-early-votes').textContent = 
+            formatNumber(modelData.early_voting.total_votes);
+        document.getElementById('youth-surge').textContent = 
+            `${modelData.early_voting.youth_surge_multiplier}x`;
+        
+        // Update weather impact
+        document.getElementById('temperature').textContent = `${modelData.weather_impact.temperature}°F`;
+        document.getElementById('no-ac-percentage').textContent = 
+            `${(modelData.weather_impact.sites_without_ac / modelData.weather_impact.total_sites * 100).toFixed(1)}%`;
+        document.getElementById('senior-suppression').textContent = 
+            `-${modelData.weather_impact.impact_by_age['65+']}%`;
+        document.getElementById('youth-suppression').textContent = 
+            `-${modelData.weather_impact.impact_by_age['18-24']}%`;
+        
+        // Update other key metrics
+        document.getElementById('heat-index').textContent = `${modelData.weather_impact.heat_index}°F`;
+        document.getElementById('no-ac-sites').textContent = 
+            `${(modelData.weather_impact.sites_without_ac / modelData.weather_impact.total_sites * 100).toFixed(1)}%`;
+        document.getElementById('banked-lead').textContent = 
+            `+${formatNumber(modelData.early_voting.mamdani_advantage)}`;
+        document.getElementById('early-vote-total').textContent = 
+            formatNumber(modelData.early_voting.total_votes);
+        
+        // Update Monte Carlo results - use 95% interval if available, otherwise use 90%
+        if (modelData.uncertainty.monte_carlo.percentile_2_5 && modelData.uncertainty.monte_carlo.percentile_97_5) {
+            document.getElementById('prediction-interval').textContent = 
+                `${modelData.uncertainty.monte_carlo.percentile_2_5}% - ${modelData.uncertainty.monte_carlo.percentile_97_5}%`;
+        } else {
+            // Fallback to 90% interval with wider approximation for 95%
+            const lower = modelData.uncertainty.monte_carlo.percentile_5 - 3;
+            const upper = modelData.uncertainty.monte_carlo.percentile_95 + 3;
+            document.getElementById('prediction-interval').textContent = 
+                `${lower.toFixed(1)}% - ${upper.toFixed(1)}%`;
+        }
+        document.getElementById('monte-carlo-iterations').textContent = 
+            formatNumber(modelData.uncertainty.monte_carlo.iterations);
+        
+        // Generate RCV simulation HTML
+        generateRCVSimulation();
+        
+        // Initialize charts with data
+        initializeCharts();
+        
+        // Update gauge needle
+        updateGaugeNeedle(modelData.summary.mamdani_win_probability);
+    }
+    
+    // Generate RCV simulation HTML
+    function generateRCVSimulation() {
+        if (!modelData || !modelData.rcv_simulation.rounds) return;
+        
+        const container = document.getElementById('rcv-simulation');
+        let html = '';
+        
+        // Find first and final rounds
+        const firstRound = modelData.rcv_simulation.rounds[0];
+        const finalRound = modelData.rcv_simulation.rounds[modelData.rcv_simulation.rounds.length - 1];
+        
+        // Round 1
+        html += `
+            <div class="w-full max-w-3xl bg-gray-50 p-6 rounded-2xl border border-gray-200 shadow-sm">
+                <h3 class="font-bold text-xl text-center mb-1">Round 1: Initial Tally</h3>
+                <p class="text-center text-gray-500 text-sm mb-6">Based on ${formatNumber(modelData.turnout.projected_total)} projected total votes, including early vote and heat-suppressed Election Day turnout.</p>
+                <div class="space-y-3">`;
+        
+        firstRound.candidates.forEach(candidate => {
+            const color = candidate.name === 'Mamdani' ? '#3b82f6' : 
+                         candidate.name === 'Cuomo' ? '#F94144' :
+                         candidate.name === 'Lander' ? '#F9C74F' :
+                         candidate.name === 'Adams' ? '#F3722C' : '#9CA3AF';
+            
+            html += `
+                <div class="flex items-center">
+                    <span class="font-bold w-24">${candidate.name}</span>
+                    <div class="w-full candidate-bar h-5">
+                        <div class="candidate-bar-fill" style="width: ${candidate.percentage}%; background-color: ${color};">${candidate.percentage}%</div>
+                    </div>
+                    <span class="text-right w-24 font-semibold text-sm">${formatNumber(candidate.votes)}</span>
+                </div>`;
+        });
+        
+        html += `</div></div><div class="flow-arrow">↓</div>`;
+        
+        // Intermediate rounds (simplified)
+        if (modelData.rcv_simulation.rounds.length > 2) {
+            html += `
+                <div class="w-full max-w-3xl bg-orange-50 p-6 rounded-2xl border border-orange-200 shadow-sm">
+                    <h3 class="font-bold text-xl text-center mb-4 text-orange-800">Intermediate Rounds: Consolidation</h3>
+                    <p class="text-center text-gray-600">Through ${modelData.rcv_simulation.rounds.length - 2} elimination rounds, votes transfer based on ranked choices.</p>
+                </div>
+                <div class="flow-arrow">↓</div>`;
+        }
+        
+        // Final round
+        html += `
+            <div class="w-full max-w-3xl bg-blue-50 p-6 rounded-2xl border-2 border-blue-300 shadow-lg">
+                <h3 class="font-bold text-xl text-center mb-2 text-blue-800">Final Round Result</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="text-center">
+                        <p class="font-bold text-2xl">Zohran Mamdani</p>
+                        <p class="text-6xl font-black my-2 text-[#3b82f6]">${modelData.rcv_simulation.final_result.mamdani_percentage}%</p>
+                        <div class="w-full bg-gray-200 rounded-full h-4 my-2">
+                          <div class="bg-[#3b82f6] h-4 rounded-full" style="width: ${modelData.rcv_simulation.final_result.mamdani_percentage}%"></div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <p class="font-bold text-2xl">Andrew Cuomo</p>
+                        <p class="text-6xl font-black my-2 text-[#F94144]">${modelData.rcv_simulation.final_result.cuomo_percentage}%</p>
+                        <div class="w-full bg-gray-200 rounded-full h-4 my-2">
+                          <div class="bg-[#F94144] h-4 rounded-full" style="width: ${modelData.rcv_simulation.final_result.cuomo_percentage}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        
+        container.innerHTML = html;
+    }
+    
+    // Update gauge needle
+    function updateGaugeNeedle(winProb) {
+        const needle = document.getElementById('gauge-needle');
+        if (needle) {
+            const rotation = (winProb / 100) * 180 - 90;
+            needle.style.transform = `translateX(-50%) rotate(${rotation}deg)`;
+        }
+    }
+    
+    // Initialize charts
+    function initializeCharts() {
         const FONT_COLOR = '#1f2937'; 
         const GRID_COLOR = '#e5e7eb';
         const PALETTE = {
@@ -627,7 +715,7 @@
             gray: '#9CA3AF'
         };
         const CUOMO_COLOR = PALETTE.red;
-        const MAMDANI_COLOR = '#3b82f6'; // Blue for Democratic primary
+        const MAMDANI_COLOR = '#3b82f6';
         const LANDER_COLOR = PALETTE.yellow;
         const ADAMS_COLOR = PALETTE.orangeDark;
         const UNDECIDED_COLOR = PALETTE.gray;
@@ -678,33 +766,38 @@
             cutout: '60%'
         };
 
-        new Chart(document.getElementById('earlyVoteBoroughChart'), {
-            type: 'bar',
-            data: {
-                labels: ['Brooklyn', 'Manhattan', 'Queens', 'The Bronx', 'Staten Island'],
-                datasets: [{
-                    label: 'Early Votes Cast',
-                    data: [142735, 122642, 75778, 30816, 12367],
-                    backgroundColor: [
-                        MAMDANI_COLOR,
-                        PALETTE.yellow,
-                        PALETTE.orangeMid,
-                        PALETTE.orangeDark,
-                        PALETTE.red
-                    ]
-                }]
-            },
-            options: {
-                ...sharedChartOptions,
-                indexAxis: 'y',
-                plugins: { legend: { display: false } },
-                scales: {
-                     y: { ...sharedChartOptions.scales.y },
-                     x: { ...sharedChartOptions.scales.x, ticks: { ...sharedChartOptions.scales.x.ticks, callback: value => new Intl.NumberFormat('en-US').format(value) } }
+        // Early Vote Borough Chart
+        if (modelData && modelData.early_voting.by_borough) {
+            const boroughData = modelData.early_voting.by_borough;
+            new Chart(document.getElementById('earlyVoteBoroughChart'), {
+                type: 'bar',
+                data: {
+                    labels: boroughData.map(b => b.name),
+                    datasets: [{
+                        label: 'Early Votes Cast',
+                        data: boroughData.map(b => b.total_votes),
+                        backgroundColor: [
+                            MAMDANI_COLOR,
+                            PALETTE.yellow,
+                            PALETTE.orangeMid,
+                            PALETTE.orangeDark,
+                            PALETTE.red
+                        ]
+                    }]
+                },
+                options: {
+                    ...sharedChartOptions,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: {
+                         y: { ...sharedChartOptions.scales.y },
+                         x: { ...sharedChartOptions.scales.x, ticks: { ...sharedChartOptions.scales.x.ticks, callback: value => new Intl.NumberFormat('en-US').format(value) } }
+                    }
                 }
-            }
-        });
+            });
+        }
 
+        // Momentum Chart
         new Chart(document.getElementById('momentumChart'), {
             type: 'line',
             data: {
@@ -742,6 +835,7 @@
             }
         });
 
+        // Demographics Chart
         new Chart(document.getElementById('demographicsChart'), {
             type: 'bar',
             data: {
@@ -766,6 +860,7 @@
             }
         });
 
+        // Issue Charts
         new Chart(document.getElementById('mamdaniIssuesChart'), {
             type: 'doughnut',
             data: {
@@ -795,15 +890,11 @@
             },
             options: sharedDonutOptions
         });
-
-        const needle = document.getElementById('gauge-needle');
-        if (needle) {
-            setTimeout(() => {
-                const winProb = 75.6;
-                const rotation = (winProb / 100) * 180 - 90;
-                needle.style.transform = `translateX(-50%) rotate(${rotation}deg)`;
-            }, 500);
-        }
+    }
+    
+    // Load data when page loads
+    document.addEventListener('DOMContentLoaded', function () {
+        loadModelData();
     });
     </script>
 </body>
