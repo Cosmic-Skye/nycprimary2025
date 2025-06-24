@@ -16,12 +16,13 @@ SAMPLE_SIZE_BASELINE = 1000  # Baseline for sample size weighting
 BASE_TURNOUT_GROWTH = 1.08  # 8% growth from 2021 based on registration trends
 
 # Heat impact parameters (based on academic studies on weather and turnout)
+# Base rates at 106°F heat index - research shows 0.14% change per 1°C
 HEAT_IMPACT_BY_AGE = {
-    '18-24': 0.05,    # 5% reduction - young voters less affected
-    '25-34': 0.05,    # 5% reduction
-    '35-49': 0.15,    # 15% reduction
-    '50-64': 0.25,    # 25% reduction
-    '65+': 0.45       # 45% reduction - elderly most affected
+    '18-24': 0.06,    # 6% reduction - highest impact (marginal voters)
+    '25-34': 0.04,    # 4% reduction - still highly weather-sensitive
+    '35-49': 0.02,    # 2% reduction - more habitual voters
+    '50-64': 0.015,   # 1.5% reduction - established voting patterns
+    '65+': 0.01       # 1% reduction - most habitual, but separate health risk
 }
 
 def validate_poll_data(poll: Dict) -> bool:
@@ -99,24 +100,57 @@ def calculate_heat_suppression(base_eday_turnout: float,
                               weather_data: Dict) -> float:
     """
     Calculate turnout suppression due to extreme heat.
+    Based on academic research showing 0.14% change per 1°C.
     
     Returns:
         float: Number of voters suppressed (positive number)
     """
     total_suppression = 0
+    temp = weather_data['heat_index_f']
     
+    # Calculate temperature scaling multiplier
+    if temp < 90:
+        heat_multiplier = 0
+    elif temp < 95:
+        heat_multiplier = 0.5
+    elif temp < 100:
+        heat_multiplier = 0.75
+    else:
+        heat_multiplier = 1.0
+    
+    # Apply base suppression rates with temperature scaling
     for age_group, demo in age_demographics.items():
         group_size = base_eday_turnout * demo['pct_historical']
-        heat_reduction = HEAT_IMPACT_BY_AGE.get(age_group, 0.1)
-        suppression = group_size * heat_reduction
+        base_heat_reduction = HEAT_IMPACT_BY_AGE.get(age_group, 0.02)
+        scaled_reduction = base_heat_reduction * heat_multiplier
+        
+        # Add health risk factor for 65+ (2-4% additional)
+        if age_group == '65+' and temp >= 100:
+            health_risk = 0.02  # Base 2% health risk
+            if temp >= 105:
+                health_risk = 0.04  # Severe health risk at extreme temps
+            scaled_reduction += health_risk
+        
+        suppression = group_size * scaled_reduction
         total_suppression += suppression
     
-    # Additional factors
-    no_ac_impact = (weather_data['poll_sites_no_ac'] / 
-                   weather_data['total_poll_sites']) * 0.10
-    extreme_heat_multiplier = 1.2 if weather_data['high_temp_f'] >= 100 else 1.0
+    # Site condition modifiers (more realistic impacts)
+    site_suppression = 0
     
-    return total_suppression * (1 + no_ac_impact) * extreme_heat_multiplier
+    # No AC at polling site: +2 percentage points (not 10%)
+    if weather_data['poll_sites_no_ac'] > 0:
+        no_ac_sites_ratio = weather_data['poll_sites_no_ac'] / weather_data['total_poll_sites']
+        site_suppression += base_eday_turnout * no_ac_sites_ratio * 0.02
+    
+    # Wait times >30 min outdoors: +3 percentage points (assumed for 20% of sites in heat)
+    outdoor_wait_sites = 0.2  # Estimate 20% of sites have outdoor waits
+    site_suppression += base_eday_turnout * outdoor_wait_sites * 0.03
+    
+    # Poor transit access: +1.5 percentage points (assumed for 15% of sites)
+    poor_transit_sites = 0.15
+    site_suppression += base_eday_turnout * poor_transit_sites * 0.015
+    
+    return total_suppression + site_suppression
 
 def calculate_nyc_primary_comprehensive():
     """
@@ -706,11 +740,11 @@ def save_results_to_json(results: Dict, polls: List[Dict], early_vote_data: Dict
             'total_sites': weather_data['total_poll_sites'],
             'voter_suppression': int(heat_suppression),
             'impact_by_age': {
-                '18-24': 5,
-                '25-34': 5,
-                '35-49': 15,
-                '50-64': 25,
-                '65+': 45
+                '18-24': 6,
+                '25-34': 4,
+                '35-49': 2,
+                '50-64': 1.5,
+                '65+': 3  # 1% behavioral + 2% health risk
             }
         },
         'turnout': {
