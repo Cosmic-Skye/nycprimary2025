@@ -343,7 +343,7 @@
                         </div>
                         <p class="text-yellow-700 mb-4">Ranked-Choice Voting dynamics show varying transfer patterns between candidates based on endorsements and voter preferences.</p>
                         <div class="text-center bg-white p-4 rounded-lg flex-grow flex flex-col justify-center">
-                            <p class="text-5xl font-extrabold text-yellow-600">75%</p>
+                            <p class="text-5xl font-extrabold text-yellow-600">46%</p>
                             <p class="font-semibold text-gray-700">Lander-to-Mamdani Transfers</p>
                             <p class="text-sm text-gray-500 mt-2">Transfer rates based on historical patterns and current endorsements.</p>
                         </div>
@@ -733,15 +733,15 @@
                     <div class="flex justify-center items-center space-x-6 mt-2">
                         <div class="text-blue-700">
                             <p class="font-black text-3xl">${formatNumber(Math.round(transfers.mamdani || 0))}</p>
-                            <p class="font-semibold text-sm">(75%) → Mamdani</p>
+                            <p class="font-semibold text-sm">(${Math.round((transfers.mamdani / landerVotes) * 100)}%) → Mamdani</p>
                         </div>
                         <div class="text-red-700">
                             <p class="font-black text-3xl">${formatNumber(Math.round(transfers.cuomo || 0))}</p>
-                            <p class="font-semibold text-sm">(15%) → Cuomo</p>
+                            <p class="font-semibold text-sm">(${Math.round((transfers.cuomo / landerVotes) * 100)}%) → Cuomo</p>
                         </div>
                         <div class="text-gray-600">
                             <p class="font-black text-3xl">${formatNumber(Math.round(transfers.exhausted || 0))}</p>
-                            <p class="font-semibold text-sm">(10%) Exhausted</p>
+                            <p class="font-semibold text-sm">(${Math.round((transfers.exhausted / landerVotes) * 100)}%) Exhausted</p>
                         </div>
                     </div>
                 </div>`;
