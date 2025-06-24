@@ -597,7 +597,7 @@
             `-${modelData.weather_impact.impact_by_age['18-24']}%`;
         
         // Update other key metrics
-        document.getElementById('heat-index').textContent = `${modelData.weather_impact.heat_index}°F`;
+        document.getElementById('heat-index').textContent = `${modelData.weather_impact.temperature}°F`;
         document.getElementById('no-ac-sites').textContent = 
             `${(modelData.weather_impact.sites_without_ac / modelData.weather_impact.total_sites * 100).toFixed(1)}%`;
         document.getElementById('banked-lead').textContent = 
