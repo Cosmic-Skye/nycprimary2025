@@ -16,14 +16,22 @@ SAMPLE_SIZE_BASELINE = 1000  # Baseline for sample size weighting
 BASE_TURNOUT_GROWTH = 1.08  # 8% growth from 2021 based on registration trends
 
 # Heat impact parameters (based on academic studies on weather and turnout)
-# Base rates at 106°F heat index - research shows 0.14% change per 1°C
-HEAT_IMPACT_BY_AGE = {
-    '18-24': 0.06,    # 6% reduction - highest impact (marginal voters)
-    '25-34': 0.04,    # 4% reduction - still highly weather-sensitive
-    '35-49': 0.02,    # 2% reduction - more habitual voters
-    '50-64': 0.015,   # 1.5% reduction - established voting patterns
-    '65+': 0.01       # 1% reduction - most habitual, but separate health risk
+# Dual-factor model: arousal effect (+0.14% per 1°C) vs friction effects
+HEAT_AROUSAL_PER_C = 0.0014  # +0.14% mobilization per 1°C
+TEMP_BASELINE_C = 22  # 72°F baseline
+
+# Friction effects by age (physical barriers, health risks)
+HEAT_FRICTION_BY_AGE = {
+    '18-24': 0.02,    # 2% friction - young voters less affected
+    '25-34': 0.03,    # 3% friction - still mobile
+    '35-49': 0.05,    # 5% friction - moderate impact
+    '50-64': 0.08,    # 8% friction - significant impact
+    '65+': 0.12       # 12% friction - highest health/mobility risk
 }
+
+# Infrastructure disruption parameters
+POLLING_SITE_DISRUPTION_RISK = 0.05  # 5% chance of disruption per site
+VOTES_LOST_PER_DISRUPTION = 0.01  # 1% of votes lost at disrupted sites
 
 def validate_poll_data(poll: Dict) -> bool:
     """Validate poll data structure and values."""
@@ -95,62 +103,65 @@ def analyze_early_voting(early_vote_data: Dict, total_early_votes: int) -> Tuple
     
     return mamdani_votes, cuomo_votes, mamdani_votes - cuomo_votes
 
-def calculate_heat_suppression(base_eday_turnout: float, 
-                              age_demographics: Dict,
-                              weather_data: Dict) -> float:
+def calculate_heat_impact(base_eday_turnout: float, 
+                         age_demographics: Dict,
+                         weather_data: Dict) -> Tuple[float, float, float]:
     """
-    Calculate turnout suppression due to extreme heat.
-    Based on academic research showing 0.14% change per 1°C.
+    Calculate net turnout change due to extreme heat using dual-factor model.
+    Combines arousal effect (positive) with friction effects (negative).
     
     Returns:
-        float: Number of voters suppressed (positive number)
+        float: Net change in voters (can be positive or negative)
     """
-    total_suppression = 0
-    temp = weather_data['heat_index_f']
+    # 1. AROUSAL EFFECT (small positive mobilization)
+    temp_c = (weather_data['high_temp_f'] - 32) * 5/9
+    temp_diff = max(0, temp_c - TEMP_BASELINE_C)
+    arousal_gain = base_eday_turnout * temp_diff * HEAT_AROUSAL_PER_C
     
-    # Calculate temperature scaling multiplier
-    if temp < 90:
-        heat_multiplier = 0
-    elif temp < 95:
-        heat_multiplier = 0.5
-    elif temp < 100:
-        heat_multiplier = 0.75
-    else:
-        heat_multiplier = 1.0
+    # 2. FRICTION EFFECTS (larger negative impacts)
+    friction_loss = 0
     
-    # Apply base suppression rates with temperature scaling
+    # A. Demographic-based friction (physical barriers, health risks)
     for age_group, demo in age_demographics.items():
         group_size = base_eday_turnout * demo['pct_historical']
-        base_heat_reduction = HEAT_IMPACT_BY_AGE.get(age_group, 0.02)
-        scaled_reduction = base_heat_reduction * heat_multiplier
+        friction_rate = HEAT_FRICTION_BY_AGE.get(age_group, 0.05)
         
-        # Add health risk factor for 65+ (2-4% additional)
-        if age_group == '65+' and temp >= 100:
-            health_risk = 0.02  # Base 2% health risk
-            if temp >= 105:
-                health_risk = 0.04  # Severe health risk at extreme temps
-            scaled_reduction += health_risk
+        # Scale friction by temperature severity
+        if weather_data['heat_index_f'] < 95:
+            friction_multiplier = 0.5
+        elif weather_data['heat_index_f'] < 100:
+            friction_multiplier = 0.75
+        else:
+            friction_multiplier = 1.0
         
-        suppression = group_size * scaled_reduction
-        total_suppression += suppression
+        friction_loss += group_size * friction_rate * friction_multiplier
     
-    # Site condition modifiers (more realistic impacts)
-    site_suppression = 0
+    # B. Infrastructure disruption (power outages, equipment failures)
+    disruption_loss = base_eday_turnout * POLLING_SITE_DISRUPTION_RISK * VOTES_LOST_PER_DISRUPTION
     
-    # No AC at polling site: +2 percentage points (not 10%)
+    # C. Site-specific conditions
+    site_friction = 0
+    
+    # No AC at polling sites
     if weather_data['poll_sites_no_ac'] > 0:
-        no_ac_sites_ratio = weather_data['poll_sites_no_ac'] / weather_data['total_poll_sites']
-        site_suppression += base_eday_turnout * no_ac_sites_ratio * 0.02
+        no_ac_ratio = weather_data['poll_sites_no_ac'] / weather_data['total_poll_sites']
+        site_friction += base_eday_turnout * no_ac_ratio * 0.02
     
-    # Wait times >30 min outdoors: +3 percentage points (assumed for 20% of sites in heat)
-    outdoor_wait_sites = 0.2  # Estimate 20% of sites have outdoor waits
-    site_suppression += base_eday_turnout * outdoor_wait_sites * 0.03
+    # Long outdoor wait times (estimated 20% of sites in extreme heat)
+    if weather_data['heat_index_f'] >= 100:
+        outdoor_wait_sites = 0.20
+        site_friction += base_eday_turnout * outdoor_wait_sites * 0.03
     
-    # Poor transit access: +1.5 percentage points (assumed for 15% of sites)
+    # Poor transit access in heat (15% of sites)
     poor_transit_sites = 0.15
-    site_suppression += base_eday_turnout * poor_transit_sites * 0.015
+    site_friction += base_eday_turnout * poor_transit_sites * 0.015
     
-    return total_suppression + site_suppression
+    # Calculate net effect
+    total_friction = friction_loss + disruption_loss + site_friction
+    net_change = arousal_gain - total_friction
+    
+    # Return detailed breakdown for reporting
+    return net_change, arousal_gain, total_friction
 
 def calculate_nyc_primary_comprehensive():
     """
@@ -246,23 +257,39 @@ def calculate_nyc_primary_comprehensive():
         'dont_rank_cuomo': {'impact': 0.05, 'uncertainty': 0.02}
     }
     
-    # RCV Transfer Patterns (based on 2021 primary data)
+    # RCV Transfer Patterns (Empirical data from Emerson poll RCV simulation)
     RCV_TRANSFERS = {
         'lander': {
-            'mamdani': 0.75,  # Progressive to progressive with endorsement
-            'cuomo': 0.15,    # Some moderate voters
-            'exhausted': 0.10
+            'mamdani': {'mean': 0.462, 'std': 0.05},   # 46.2% based on actual poll
+            'cuomo': {'mean': 0.237, 'std': 0.05},     # 23.7% based on actual poll
+            'exhausted': {'mean': 0.301, 'std': 0.05}  # 30.1% HIGH exhaustion rate
         },
         'adams': {
-            'cuomo': 0.40,    # Moderate to moderate
-            'mamdani': 0.35,  # Some progressive voters
-            'exhausted': 0.25
+            'mamdani': {'mean': 0.333, 'std': 0.05},   # 33.3% - surprising cross-bloc
+            'cuomo': {'mean': 0.161, 'std': 0.05},     # 16.1% - lower than expected
+            'lander': {'mean': 0.322, 'std': 0.05},    # 32.2% - to other progressive
+            'exhausted': {'mean': 0.184, 'std': 0.03}  # 18.4% exhaustion
         },
         'others': {
-            'mamdani': 0.50,  # Split evenly with slight progressive lean
-            'cuomo': 0.35,
-            'exhausted': 0.15
+            'mamdani': {'mean': 0.40, 'std': 0.10},    # Estimated from other patterns
+            'cuomo': {'mean': 0.35, 'std': 0.10},
+            'exhausted': {'mean': 0.25, 'std': 0.05}
         }
+    }
+    
+    # Ballot exhaustion rates by demographic (based on 2021 analysis)
+    BALLOT_EXHAUSTION_RATES = {
+        'college_educated': 0.056,      # 5.6% exhaustion rate
+        'non_college': 0.111,          # 11.1% exhaustion rate
+        'white': 0.060,                # 6.0% rate
+        'black': 0.095,                # 9.5% rate
+        'hispanic': 0.085,             # 8.5% rate
+        'asian': 0.000,                # 0% rate (very low)
+        'manhattan': 0.125,            # 12.5% rate
+        'brooklyn': 0.070,             # 7.0% rate
+        'queens': 0.053,               # 5.3% rate
+        'bronx': 0.090,                # 9.0% rate
+        'staten_island': 0.100         # 10.0% rate
     }
     
     
@@ -287,82 +314,88 @@ def calculate_nyc_primary_comprehensive():
     base_turnout_projection = HISTORICAL_DATA['2021_primary'] * BASE_TURNOUT_GROWTH
     base_eday_turnout = base_turnout_projection - TOTAL_EARLY_VOTES
     
-    # Calculate heat suppression
-    heat_suppression = calculate_heat_suppression(base_eday_turnout, 
-                                                 AGE_DEMOGRAPHICS, 
-                                                 WEATHER_FORECAST)
+    # Calculate heat impact (net change - can be positive or negative)
+    heat_net_change, arousal_gain, friction_loss = calculate_heat_impact(
+        base_eday_turnout, AGE_DEMOGRAPHICS, WEATHER_FORECAST)
     
-    # Apply suppression (subtracting because it reduces turnout)
-    projected_eday_turnout = base_eday_turnout - heat_suppression
+    # Apply heat impact
+    projected_eday_turnout = base_eday_turnout + heat_net_change
     projected_total_turnout = TOTAL_EARLY_VOTES + projected_eday_turnout
     
     # ========== STAGE 4: DEMOGRAPHIC VOTE MODELING ==========
     
+    # For display purposes, show E-day breakdown by demographics
+    # But actual vote totals come from polling percentages
     eday_votes = {}
-    mamdani_eday_total = 0
-    cuomo_eday_total = 0
     
-    # Calculate heat-adjusted turnout by age group
     for age_group, demo in AGE_DEMOGRAPHICS.items():
-        # Reduce turnout based on heat impact
-        heat_reduction = HEAT_IMPACT_BY_AGE[age_group]
-        heat_adjusted_pct = demo['pct_historical'] * (1 - heat_reduction)
-        
-        # Normalize to ensure percentages sum to 1
-        total_heat_adjusted = sum(d['pct_historical'] * (1 - HEAT_IMPACT_BY_AGE[g]) 
-                                 for g, d in AGE_DEMOGRAPHICS.items())
-        normalized_pct = heat_adjusted_pct / total_heat_adjusted
-        
+        normalized_pct = demo['pct_historical']
         group_eday_votes = projected_eday_turnout * normalized_pct
-        mamdani_votes = group_eday_votes * demo['mamdani_support']
-        cuomo_votes = group_eday_votes * (1 - demo['mamdani_support'])
-        
-        mamdani_eday_total += mamdani_votes
-        cuomo_eday_total += cuomo_votes
         
         eday_votes[age_group] = {
             'total': group_eday_votes,
-            'mamdani': mamdani_votes,
-            'cuomo': cuomo_votes
+            'mamdani': group_eday_votes * demo['mamdani_support'],
+            'cuomo': group_eday_votes * (1 - demo['mamdani_support'])
         }
     
     eday_breakdown = eday_votes
-    mamdani_eday = mamdani_eday_total
-    cuomo_eday = cuomo_eday_total
+    
+    # Calculate implied E-day totals based on overall polling
+    # This properly accounts for the early vote advantage
+    mamdani_total_expected = projected_total_turnout * 0.339  # 32.4% + 1.5% momentum
+    cuomo_total_expected = projected_total_turnout * 0.334    # 34.9% - 1.5% momentum
+    
+    mamdani_eday = mamdani_total_expected - mamdani_early_votes
+    cuomo_eday = cuomo_total_expected - cuomo_early_votes
     
     # ========== STAGE 5: RANKED CHOICE VOTING SIMULATION ==========
     
-    # Apply momentum factor - redistribute votes to maintain conservation
-    momentum_shift = 0.015  # 1.5% of total votes shift from Cuomo to Mamdani
-    total_votes = (mamdani_early_votes + mamdani_eday + cuomo_early_votes + cuomo_eday)
-    momentum_votes = total_votes * momentum_shift
-    
-    # Apply momentum shift (conserves total votes)
-    mamdani_total_adjusted = (mamdani_early_votes + mamdani_eday) + momentum_votes
-    cuomo_total_adjusted = (cuomo_early_votes + cuomo_eday) - momentum_votes
-    
-    # First choice projections
-    first_choice_totals = {
-        'mamdani': mamdani_total_adjusted,
-        'cuomo': cuomo_total_adjusted,
-        'lander': projected_total_turnout * 0.12,  # From polling
-        'adams': projected_total_turnout * 0.08,
-        'others': projected_total_turnout * 0.10
+    # Apply overall first-choice percentages from polling
+    # These already account for the early/E-day split
+    first_choice_pcts = {
+        'mamdani': 0.324,  # 32.4% from Emerson
+        'cuomo': 0.349,    # 34.9% from Emerson  
+        'lander': 0.128,   # 12.8% from Emerson
+        'adams': 0.081,    # 8.1% from Emerson
+        'others': 0.078    # Others combined (7.8%)
     }
     
-    # RCV transfers based on endorsements
+    # Apply momentum shift
+    momentum_shift = 0.015  # 1.5% shift from Cuomo to Mamdani
+    first_choice_pcts['mamdani'] += momentum_shift
+    first_choice_pcts['cuomo'] -= momentum_shift
+    
+    # Calculate vote totals
+    first_choice_totals = {}
+    for candidate, pct in first_choice_pcts.items():
+        first_choice_totals[candidate] = projected_total_turnout * pct
+    
+    # RCV transfers with probabilistic modeling and ballot exhaustion
     def simulate_rcv():
-        """Simulate ranked choice voting rounds using historical transfer patterns."""
+        """Simulate ranked choice voting with uncertainty and demographic exhaustion."""
         votes = first_choice_totals.copy()
         eliminated = []
         rounds = []
+        exhausted_total = 0
+        
+        # Track demographic composition for exhaustion modeling
+        # Simplified: assume Mamdani voters are more college-educated/white/Asian
+        # Cuomo voters are more non-college/Black/Hispanic
+        demographic_weights = {
+            'mamdani': {'college': 0.62, 'white_asian': 0.70},
+            'cuomo': {'college': 0.39, 'white_asian': 0.30},
+            'lander': {'college': 0.75, 'white_asian': 0.80},  # Progressive bloc
+            'adams': {'college': 0.35, 'white_asian': 0.25},   # Moderate bloc
+            'others': {'college': 0.50, 'white_asian': 0.50}   # Mixed
+        }
         
         # Round 1 - Initial count
         round_data = {
             'round': 1,
             'votes': votes.copy(),
             'eliminated': None,
-            'transfers': {}
+            'transfers': {},
+            'exhausted': 0
         }
         rounds.append(round_data)
         
@@ -375,21 +408,54 @@ def calculate_nyc_primary_comprehensive():
             # Track transfers
             transfers = {}
             eliminated_votes = votes[lowest]
+            round_exhausted = 0
             
-            # Use predefined transfer patterns
+            # Get transfer patterns with uncertainty
             if lowest in RCV_TRANSFERS:
                 pattern = RCV_TRANSFERS[lowest]
             else:
                 pattern = RCV_TRANSFERS['others']
             
+            # Calculate actual transfer rates for this simulation
+            transfer_rates = {}
+            remaining_rate = 1.0
+            
+            for recipient, params in pattern.items():
+                if recipient != 'exhausted':
+                    # Check if recipient is still active
+                    if recipient in active_candidates or recipient in votes:
+                        # Sample from normal distribution
+                        rate = max(0, min(1, random.gauss(params['mean'], params['std'])))
+                        transfer_rates[recipient] = rate
+                        remaining_rate -= rate
+            
+            # Calculate exhaustion rate based on demographics
+            base_exhaustion = max(0, remaining_rate)
+            
+            # Adjust exhaustion based on demographic composition
+            demo = demographic_weights.get(lowest, demographic_weights['others'])
+            college_rate = demo['college']
+            
+            # Weighted exhaustion rate
+            demographic_exhaustion = (
+                college_rate * BALLOT_EXHAUSTION_RATES['college_educated'] +
+                (1 - college_rate) * BALLOT_EXHAUSTION_RATES['non_college']
+            )
+            
+            # Final exhaustion is higher of base or demographic
+            final_exhaustion_rate = max(base_exhaustion, demographic_exhaustion)
+            
             # Apply transfers
-            for recipient, rate in pattern.items():
-                if recipient == 'exhausted':
-                    transfers[recipient] = eliminated_votes * rate
-                else:
+            for recipient, rate in transfer_rates.items():
+                if recipient in votes and rate > 0:
                     transfer_amount = eliminated_votes * rate
                     votes[recipient] += transfer_amount
                     transfers[recipient] = transfer_amount
+            
+            # Apply exhaustion
+            round_exhausted = eliminated_votes * final_exhaustion_rate
+            exhausted_total += round_exhausted
+            transfers['exhausted'] = round_exhausted
             
             votes[lowest] = 0
             eliminated.append(lowest)
@@ -398,14 +464,19 @@ def calculate_nyc_primary_comprehensive():
                 'round': round_num,
                 'votes': votes.copy(),
                 'eliminated': lowest,
-                'transfers': transfers
+                'transfers': transfers,
+                'exhausted': round_exhausted,
+                'total_exhausted': exhausted_total
             }
             rounds.append(round_data)
             round_num += 1
         
         # Final round percentages
         total_final = votes['mamdani'] + votes['cuomo']
-        mamdani_final_pct = (votes['mamdani'] / total_final) * 100
+        if total_final > 0:
+            mamdani_final_pct = (votes['mamdani'] / total_final) * 100
+        else:
+            mamdani_final_pct = 50.0  # Tie if no votes left
         
         return mamdani_final_pct, rounds
     
@@ -509,10 +580,16 @@ def calculate_nyc_primary_comprehensive():
     print("\n🌡️ HEAT IMPACT ANALYSIS")
     print(f"  Forecast High: {WEATHER_FORECAST['high_temp_f']}°F (Heat Index: {WEATHER_FORECAST['heat_index_f']}°F)")
     print(f"  Sites Without AC: {WEATHER_FORECAST['poll_sites_no_ac']}/{WEATHER_FORECAST['total_poll_sites']} ({WEATHER_FORECAST['poll_sites_no_ac']/WEATHER_FORECAST['total_poll_sites']*100:.1f}%)")
-    print(f"  Total Vote Suppression: {int(abs(heat_suppression)):,} fewer voters")
-    print("  Impact by Age Group:")
+    print(f"  Net Turnout Change: {int(heat_net_change):+,} voters")
+    print(f"  → Arousal Effect: +{int(arousal_gain):,} voters")
+    print(f"  → Friction Effect: -{int(friction_loss):,} voters")
+    if heat_net_change > 0:
+        print(f"  → Net Result: Arousal effect outweighs friction")
+    else:
+        print(f"  → Net Result: Friction effects dominate")
+    print("  Friction Impact by Age Group:")
     for age in AGE_DEMOGRAPHICS.keys():
-        print(f"    {age}: {HEAT_IMPACT_BY_AGE[age]*100:.0f}% reduction")
+        print(f"    {age}: {HEAT_FRICTION_BY_AGE[age]*100:.0f}% friction rate")
     
     print("\n📈 TURNOUT PROJECTIONS")
     print(f"  Historical 2021 Turnout: {HISTORICAL_DATA['2021_primary']:,}")
@@ -563,7 +640,7 @@ def calculate_nyc_primary_comprehensive():
     
     print("\n🌊 FACTORS INCORPORATED")
     print(f"  Momentum adjustment: {momentum_shift*100:.1f}% of voters shift from Cuomo to Mamdani")
-    print(f"  Cross-Endorsement: {RCV_TRANSFERS['lander']['mamdani']*100:.0f}% Lander→Mamdani transfers")
+    print(f"  Cross-Endorsement: {RCV_TRANSFERS['lander']['mamdani']['mean']*100:.0f}% Lander→Mamdani transfers (±{RCV_TRANSFERS['lander']['mamdani']['std']*100:.0f}%)")
     
     print("\n" + "=" * 80)
     print("🎯 FINAL PREDICTION")
@@ -655,7 +732,7 @@ def calculate_nyc_primary_comprehensive():
 
 def save_results_to_json(results: Dict, polls: List[Dict], early_vote_data: Dict, 
                         rcv_rounds: List[Dict], eday_breakdown: Dict,
-                        weather_data: Dict, heat_suppression: float,
+                        weather_data: Dict, heat_net_change: float,
                         projected_turnout: int, early_votes: int) -> None:
     """Save comprehensive model results to JSON file for web consumption."""
     
@@ -738,13 +815,13 @@ def save_results_to_json(results: Dict, polls: List[Dict], early_vote_data: Dict
             'heat_index': weather_data['heat_index_f'],
             'sites_without_ac': weather_data['poll_sites_no_ac'],
             'total_sites': weather_data['total_poll_sites'],
-            'voter_suppression': int(heat_suppression),
+            'net_voter_change': int(heat_net_change),
             'impact_by_age': {
-                '18-24': 6,
-                '25-34': 4,
-                '35-49': 2,
-                '50-64': 1.5,
-                '65+': 3  # 1% behavioral + 2% health risk
+                '18-24': 2,
+                '25-34': 3,
+                '35-49': 5,
+                '50-64': 8,
+                '65+': 12
             }
         },
         'turnout': {
@@ -941,7 +1018,7 @@ if __name__ == "__main__":
             result.get('rcv_rounds', rcv_rounds_placeholder),  # Use actual RCV rounds if available
             eday_breakdown_placeholder,
             WEATHER_FORECAST,
-            205581,  # heat suppression
+            -30000,  # heat net change (negative = friction dominates)
             813933,  # projected turnout
             TOTAL_EARLY_VOTES
         )
