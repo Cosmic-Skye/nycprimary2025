@@ -1,12 +1,12 @@
 {
-  "timestamp": "2025-06-23T20:14:21.490185",
+  "timestamp": "2025-06-23T20:19:40.299784",
   "summary": {
-    "mamdani_win_probability": 75.1,
-    "cuomo_win_probability": 24.9,
-    "mamdani_vote_share": 52.4,
-    "cuomo_vote_share": 47.6,
-    "margin_percentage": 4.7,
-    "margin_votes": 38519,
+    "mamdani_win_probability": 74.3,
+    "cuomo_win_probability": 25.7,
+    "mamdani_vote_share": 52.3,
+    "cuomo_vote_share": 47.7,
+    "margin_percentage": 4.6,
+    "margin_votes": 37158,
     "confidence_interval": {
       "lower": 45.4,
       "upper": 59.2
@@ -261,19 +261,19 @@
       }
     ],
     "final_result": {
-      "mamdani_percentage": 52.4,
-      "cuomo_percentage": 47.6
+      "mamdani_percentage": 52.3,
+      "cuomo_percentage": 47.7
     }
   },
   "uncertainty": {
     "monte_carlo": {
-      "iterations": 1000,
-      "mean": 52.4,
-      "std_dev": 3.5,
-      "percentile_5": 46.5,
-      "percentile_95": 58.3,
-      "percentile_2_5": 45.4,
-      "percentile_97_5": 59.4
+      "iterations": 100000,
+      "mean": 52.3,
+      "std_dev": 3.7,
+      "percentile_5": 46.1,
+      "percentile_95": 58.4,
+      "percentile_2_5": 45.0,
+      "percentile_97_5": 59.6
     },
     "sensitivity": [
       {

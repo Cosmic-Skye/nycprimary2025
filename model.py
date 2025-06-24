@@ -8,7 +8,7 @@ from typing import Dict, List, Tuple, Optional
 # Statistical parameters
 HISTORICAL_POLLING_ERROR = 3.5  # Average NYC primary polling error
 CONFIDENCE_LEVEL_Z = 1.96  # 95% confidence interval
-MONTE_CARLO_ITERATIONS = 10000  # For uncertainty analysis
+MONTE_CARLO_ITERATIONS = 100000  # For uncertainty analysis
 
 # Model parameters with documented sources
 TIME_DECAY_FACTOR = 0.95  # Daily decay in poll relevance
@@ -444,7 +444,7 @@ def calculate_nyc_primary_comprehensive():
         }
     
     # Run Monte Carlo simulation
-    monte_carlo_results = run_monte_carlo_simulation(1000)
+    monte_carlo_results = run_monte_carlo_simulation(MONTE_CARLO_ITERATIONS)
     
     # Use Monte Carlo mean as the primary result for consistency
     final_mamdani_vote_share_mc = monte_carlo_results['mean']
@@ -556,7 +556,7 @@ def calculate_nyc_primary_comprehensive():
     print(f"  95% Confidence Range: {margin_lower:.1f}% - {margin_upper:.1f}%")
     print(f"  In votes: {margin_votes_lower:,} - {margin_votes_upper:,} votes")
     
-    print(f"\nMONTE CARLO UNCERTAINTY ANALYSIS (1,000 iterations):")
+    print(f"\nMONTE CARLO UNCERTAINTY ANALYSIS ({MONTE_CARLO_ITERATIONS:,} iterations):")
     print(f"  Mean vote share: {monte_carlo_results['mean']:.1f}%")
     print(f"  Standard deviation: {monte_carlo_results['std']:.1f}%")
     print(f"  95% Confidence interval: {monte_carlo_results['percentile_2_5']:.1f}% - {monte_carlo_results['percentile_97_5']:.1f}%")
@@ -739,7 +739,7 @@ def save_results_to_json(results: Dict, polls: List[Dict], early_vote_data: Dict
         },
         'uncertainty': {
             'monte_carlo': {
-                'iterations': 1000,
+                'iterations': MONTE_CARLO_ITERATIONS,
                 'mean': round(results['monte_carlo']['mean'], 1),
                 'std_dev': round(results['monte_carlo']['std'], 1),
                 'percentile_5': round(results['monte_carlo']['percentile_5'], 1),
