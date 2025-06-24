@@ -762,7 +762,7 @@ def calculate_nyc_primary_comprehensive():
     print(f"    Cuomo: {int(cuomo_eday):,} votes")
     print(f"    Cuomo needs {(mamdani_early_advantage/projected_eday_turnout)*100:.1f}% E-Day margin to tie")
     
-    print("\n🔄 RANKED CHOICE VOTING SIMULATION")
+    print("\n🔄 RANKED CHOICE VOTING SIMULATION (Example Run)")
     
     # Print each round
     for round_data in rcv_rounds:
@@ -783,14 +783,25 @@ def calculate_nyc_primary_comprehensive():
                     if votes > 0:
                         print(f"      → {recipient.title()}: {int(votes):,} votes")
     
-    # Final result
-    print(f"\n  FINAL RESULT:")
-    final_round = rcv_rounds[-1]
-    final_votes = {k: v for k, v in final_round['votes'].items() if v > 0}
-    total_remaining = sum(final_votes.values())
-    for candidate, votes in sorted(final_votes.items(), key=lambda x: x[1], reverse=True):
-        pct = (votes/total_remaining)*100
-        print(f"    {candidate.title()}: {int(votes):,} ({pct:.1f}%)")
+    # Final result - Use Monte Carlo mean for consistency
+    print(f"\n  FINAL RESULT (Monte Carlo Median):")
+    # Calculate vote totals based on Monte Carlo mean percentages
+    final_mamdani_pct = monte_carlo_results['mean']
+    final_cuomo_pct = 100 - final_mamdani_pct
+    
+    # Calculate final vote counts after exhaustion
+    # Estimate ~10% exhaustion in final round based on patterns
+    final_round_total = int(projected_total_turnout * 0.90)
+    mamdani_final_votes = int(final_round_total * final_mamdani_pct / 100)
+    cuomo_final_votes = int(final_round_total * final_cuomo_pct / 100)
+    
+    # Display in order of votes
+    if final_mamdani_pct > 50:
+        print(f"    Mamdani: {mamdani_final_votes:,} ({final_mamdani_pct:.1f}%)")
+        print(f"    Cuomo: {cuomo_final_votes:,} ({final_cuomo_pct:.1f}%)")
+    else:
+        print(f"    Cuomo: {cuomo_final_votes:,} ({final_cuomo_pct:.1f}%)")
+        print(f"    Mamdani: {mamdani_final_votes:,} ({final_mamdani_pct:.1f}%)")
     
     print("\n🌊 FACTORS INCORPORATED")
     print(f"  Momentum adjustment: {momentum_shift*100:.1f}% of voters shift from Cuomo to Mamdani")

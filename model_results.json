@@ -1,15 +1,15 @@
 {
-  "timestamp": "2025-06-24T01:54:52.207837",
+  "timestamp": "2025-06-24T02:11:00.944463",
   "summary": {
-    "mamdani_win_probability": 54.7,
-    "cuomo_win_probability": 45.3,
+    "mamdani_win_probability": 54.9,
+    "cuomo_win_probability": 45.1,
     "mamdani_vote_share": 50.4,
     "cuomo_vote_share": 49.6,
-    "margin_percentage": 0.8,
-    "margin_votes": 8095,
+    "margin_percentage": 0.9,
+    "margin_votes": 8424,
     "confidence_interval": {
-      "lower": 42.7,
-      "upper": 56.5
+      "lower": 43.0,
+      "upper": 56.8
     }
   },
   "polling": {
@@ -191,13 +191,13 @@
         "candidates": [
           {
             "name": "Cuomo",
-            "votes": 358124,
-            "percentage": 37.2
+            "votes": 369098,
+            "percentage": 38.5
           },
           {
             "name": "Mamdani",
-            "votes": 326674,
-            "percentage": 33.9
+            "votes": 310396,
+            "percentage": 32.4
           },
           {
             "name": "Lander",
@@ -207,7 +207,7 @@
           {
             "name": "Others",
             "votes": 98424,
-            "percentage": 10.2
+            "percentage": 10.3
           },
           {
             "name": "Adams",
@@ -217,9 +217,9 @@
         ],
         "eliminated": "other",
         "transfers": {
-          "mamdani": 20463,
-          "cuomo": 14269,
-          "exhausted": 7450
+          "mamdani": 4185,
+          "cuomo": 25243,
+          "exhausted": 12754
         }
       },
       {
@@ -227,31 +227,31 @@
         "candidates": [
           {
             "name": "Cuomo",
-            "votes": 371536,
-            "percentage": 39.0
+            "votes": 379805,
+            "percentage": 40.6
           },
           {
             "name": "Mamdani",
-            "votes": 350339,
-            "percentage": 36.8
+            "votes": 328409,
+            "percentage": 35.1
           },
           {
             "name": "Lander",
-            "votes": 132127,
-            "percentage": 13.9
+            "votes": 128417,
+            "percentage": 13.7
           },
           {
             "name": "Others",
             "votes": 98424,
-            "percentage": 10.3
+            "percentage": 10.5
           }
         ],
         "eliminated": "adams",
         "transfers": {
-          "mamdani": 23665,
-          "cuomo": 13412,
-          "lander": 26251,
-          "exhausted": 11465
+          "mamdani": 18013,
+          "cuomo": 10707,
+          "lander": 22541,
+          "exhausted": 23532
         }
       },
       {
@@ -259,25 +259,25 @@
         "candidates": [
           {
             "name": "Cuomo",
-            "votes": 403055,
-            "percentage": 43.7
+            "votes": 407746,
+            "percentage": 44.8
           },
           {
             "name": "Mamdani",
-            "votes": 386486,
-            "percentage": 41.9
+            "votes": 373167,
+            "percentage": 41.0
           },
           {
             "name": "Lander",
-            "votes": 132127,
-            "percentage": 14.3
+            "votes": 128417,
+            "percentage": 14.1
           }
         ],
         "eliminated": "others",
         "transfers": {
-          "mamdani": 36147,
-          "cuomo": 31519,
-          "exhausted": 30758
+          "mamdani": 44758,
+          "cuomo": 27941,
+          "exhausted": 25725
         }
       },
       {
@@ -285,20 +285,20 @@
         "candidates": [
           {
             "name": "Cuomo",
-            "votes": 438007,
-            "percentage": 50.4
+            "votes": 432710,
+            "percentage": 50.1
           },
           {
             "name": "Mamdani",
-            "votes": 431087,
-            "percentage": 49.6
+            "votes": 430850,
+            "percentage": 49.9
           }
         ],
         "eliminated": "lander",
         "transfers": {
-          "mamdani": 44601,
-          "cuomo": 34952,
-          "exhausted": 52574
+          "mamdani": 57683,
+          "cuomo": 24964,
+          "exhausted": 45770
         }
       }
     ],
