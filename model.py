@@ -3,6 +3,7 @@ import random
 import json
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional
+from collections import Counter
 
 # ========== CONSTANTS ==========
 # Statistical parameters
@@ -291,9 +292,10 @@ RCV_TRANSFERS = {
         'exhausted': {'mean': 0.184, 'std': 0.03}  # 18.4% exhaustion
     },
     'others': {
-        'mamdani': {'mean': 0.40, 'std': 0.10},    # Estimated from other patterns
-        'cuomo': {'mean': 0.35, 'std': 0.10},
-        'exhausted': {'mean': 0.25, 'std': 0.05}
+        'mamdani': {'mean': 0.35, 'std': 0.10},    # Progressive-leaning others
+        'cuomo': {'mean': 0.30, 'std': 0.10},      # Moderate-leaning others
+        'lander': {'mean': 0.15, 'std': 0.05},     # Some progressive alignment
+        'exhausted': {'mean': 0.20, 'std': 0.05}   # Lower exhaustion with more options
     }
 }
 
@@ -506,17 +508,10 @@ def calculate_nyc_primary_comprehensive():
             'others': {'college': 0.50, 'white_asian': 0.50}   # Mixed demographics
         }
         
-        # Round 1 - Initial count
-        round_data = {
-            'round': 1,
-            'votes': votes.copy(),
-            'eliminated': None,
-            'transfers': {},
-            'exhausted': 0
-        }
-        rounds.append(round_data)
+        # Store initial vote counts separately for Round 1 display
+        initial_votes = votes.copy()
         
-        round_num = 2
+        round_num = 1
         while len([k for k, v in votes.items() if v > 0 and k not in eliminated]) > 2:
             # Find lowest vote-getter
             active_candidates = {k: v for k, v in votes.items() if k not in eliminated and v > 0}
@@ -546,6 +541,22 @@ def calculate_nyc_primary_comprehensive():
                         # Sample from normal distribution
                         rate = max(0, random.gauss(params['mean'], params['std']))
                         raw_rates[recipient] = rate
+            
+            # FIXED: Add missing active candidates with default transfer rates
+            # If pattern doesn't specify transfers to an active candidate, add them
+            for candidate in active_candidates:
+                if candidate not in raw_rates and candidate != lowest:
+                    # Use a default transfer rate for unspecified candidates
+                    # Proportional to what's left after specified transfers
+                    remaining_prob = 1.0 - sum(pattern.get(c, {'mean': 0})['mean'] 
+                                              for c in pattern if c != 'exhausted')
+                    if remaining_prob > 0:
+                        # Distribute remaining probability among unspecified candidates
+                        num_unspecified = len([c for c in active_candidates 
+                                             if c not in pattern and c != lowest])
+                        if num_unspecified > 0:
+                            default_rate = remaining_prob / num_unspecified
+                            raw_rates[candidate] = max(0, random.gauss(default_rate, 0.05))
             
             # Calculate total of raw rates
             total_raw_rate = sum(raw_rates.values())
@@ -587,9 +598,15 @@ def calculate_nyc_primary_comprehensive():
             total_transferred = 0
             remaining_votes = int(eliminated_votes)
             
+            # VALIDATION: Ensure all active candidates are considered for transfers
+            for candidate in active_candidates:
+                if candidate != lowest and candidate not in transfer_rates:
+                    print(f"WARNING: Active candidate {candidate} not in transfer rates!")
+            
             # Transfer to active candidates
             for recipient, rate in transfer_rates.items():
-                if recipient in votes and rate > 0:
+                # Only transfer to candidates who are still active (not eliminated)
+                if recipient in votes and recipient not in eliminated and rate > 0:
                     # Use integer division to avoid fractional votes
                     transfer_amount = int(round(eliminated_votes * rate))
                     # Ensure we don't transfer more than remaining
@@ -612,14 +629,31 @@ def calculate_nyc_primary_comprehensive():
             votes[lowest] = 0
             eliminated.append(lowest)
             
+            # Store round data with both initial state and elimination result
             round_data = {
                 'round': round_num,
-                'votes': votes.copy(),
+                'votes_start': {},  # Votes at start of round (before elimination)
+                'votes_end': votes.copy(),  # Votes at end of round (after transfers)
                 'eliminated': lowest,
+                'eliminated_votes': eliminated_votes,
                 'transfers': transfers,
                 'exhausted': round_exhausted,
                 'total_exhausted': exhausted_total
             }
+            
+            # Calculate votes at start of round (before this elimination)
+            if round_num == 1:
+                # First round uses initial votes
+                round_data['votes_start'] = initial_votes.copy()
+            else:
+                # Subsequent rounds calculate from transfers
+                for candidate in votes:
+                    if candidate == lowest:
+                        round_data['votes_start'][candidate] = eliminated_votes
+                    else:
+                        # Subtract transfers received to get starting value
+                        round_data['votes_start'][candidate] = votes[candidate] - transfers.get(candidate, 0)
+            
             rounds.append(round_data)
             round_num += 1
         
@@ -658,9 +692,13 @@ def calculate_nyc_primary_comprehensive():
     
     def run_monte_carlo_simulation(n_iterations: int = 1000) -> Dict:
         """Run Monte Carlo simulation with RCV simulation inside the loop.
-        PROPER FIX: Each iteration runs full RCV to capture transfer uncertainty."""
+        PROPER FIX: Each iteration runs full RCV to capture transfer uncertainty.
+        Now also tracks round-by-round results for median calculation."""
         results = []
         rcv_rounds_samples = []  # Store a few samples for reporting
+        
+        # Track votes by round for median calculation
+        rounds_data = {}  # Will store lists of vote counts by round
         
         print(f"\nRunning {n_iterations:,} Monte Carlo iterations...")
         print("Progress: ", end="", flush=True)
@@ -672,6 +710,42 @@ def calculate_nyc_primary_comprehensive():
             
             # Run RCV simulation for this iteration to capture transfer uncertainty
             rcv_result, rcv_rounds_sample = simulate_rcv()
+            
+            # Store round-by-round data for median calculation
+            for round_data in rcv_rounds_sample:
+                round_num = round_data['round']
+                if round_num not in rounds_data:
+                    rounds_data[round_num] = {
+                        'votes_start_by_candidate': {},
+                        'votes_end_by_candidate': {},
+                        'eliminated': [],
+                        'eliminated_votes': [],
+                        'transfers': {}
+                    }
+                
+                # Store vote counts at start of round
+                for candidate, votes in round_data['votes_start'].items():
+                    if candidate not in rounds_data[round_num]['votes_start_by_candidate']:
+                        rounds_data[round_num]['votes_start_by_candidate'][candidate] = []
+                    rounds_data[round_num]['votes_start_by_candidate'][candidate].append(votes)
+                
+                # Store vote counts at end of round
+                for candidate, votes in round_data['votes_end'].items():
+                    if candidate not in rounds_data[round_num]['votes_end_by_candidate']:
+                        rounds_data[round_num]['votes_end_by_candidate'][candidate] = []
+                    rounds_data[round_num]['votes_end_by_candidate'][candidate].append(votes)
+                
+                # Track eliminations
+                if round_data.get('eliminated'):
+                    rounds_data[round_num]['eliminated'].append(round_data['eliminated'])
+                    rounds_data[round_num]['eliminated_votes'].append(round_data.get('eliminated_votes', 0))
+                
+                # Track transfers
+                if round_data.get('transfers'):
+                    for recipient, amount in round_data['transfers'].items():
+                        if recipient not in rounds_data[round_num]['transfers']:
+                            rounds_data[round_num]['transfers'][recipient] = []
+                        rounds_data[round_num]['transfers'][recipient].append(amount)
             
             # Store first few RCV rounds for reporting
             if len(rcv_rounds_samples) < 5:
@@ -708,6 +782,56 @@ def calculate_nyc_primary_comprehensive():
         
         print("100%\n", flush=True)
         
+        # Calculate median votes for each round
+        median_rounds = []
+        for round_num in sorted(rounds_data.keys()):
+            round_medians = {'round': round_num, 'votes_start': {}, 'votes_end': {}, 'transfers': {}}
+            
+            # Calculate median votes at start of round
+            for candidate, vote_list in rounds_data[round_num]['votes_start_by_candidate'].items():
+                if vote_list:  # Only if we have data for this candidate
+                    sorted_votes = sorted(vote_list)
+                    median_idx = len(sorted_votes) // 2
+                    if len(sorted_votes) % 2 == 0:
+                        # Even number of items - take average of middle two
+                        median_votes = (sorted_votes[median_idx - 1] + sorted_votes[median_idx]) / 2
+                    else:
+                        # Odd number - take middle item
+                        median_votes = sorted_votes[median_idx]
+                    round_medians['votes_start'][candidate] = int(median_votes)
+            
+            # Calculate median votes at end of round  
+            for candidate, vote_list in rounds_data[round_num]['votes_end_by_candidate'].items():
+                if vote_list:  # Only if we have data for this candidate
+                    sorted_votes = sorted(vote_list)
+                    median_idx = len(sorted_votes) // 2
+                    if len(sorted_votes) % 2 == 0:
+                        median_votes = (sorted_votes[median_idx - 1] + sorted_votes[median_idx]) / 2
+                    else:
+                        median_votes = sorted_votes[median_idx]
+                    round_medians['votes_end'][candidate] = int(median_votes)
+            
+            # Find most common elimination for this round
+            eliminations = rounds_data[round_num]['eliminated']
+            if eliminations:
+                # Get most frequent elimination
+                round_medians['eliminated'] = Counter(eliminations).most_common(1)[0][0]
+            else:
+                round_medians['eliminated'] = None
+            
+            # Calculate median transfers
+            for recipient, transfer_list in rounds_data[round_num]['transfers'].items():
+                if transfer_list:
+                    sorted_transfers = sorted(transfer_list)
+                    median_idx = len(sorted_transfers) // 2
+                    if len(sorted_transfers) % 2 == 0:
+                        median_transfer = (sorted_transfers[median_idx - 1] + sorted_transfers[median_idx]) / 2
+                    else:
+                        median_transfer = sorted_transfers[median_idx]
+                    round_medians['transfers'][recipient] = int(median_transfer)
+            
+            median_rounds.append(round_medians)
+        
         results_sorted = sorted(results)
         return {
             'mean': sum(results) / len(results),
@@ -716,7 +840,8 @@ def calculate_nyc_primary_comprehensive():
             'percentile_95': results_sorted[int(0.95 * len(results))],
             'percentile_2_5': results_sorted[int(0.025 * len(results))],
             'percentile_97_5': results_sorted[int(0.975 * len(results))],
-            'rcv_rounds_sample': rcv_rounds_samples[0] if rcv_rounds_samples else None
+            'rcv_rounds_sample': rcv_rounds_samples[0] if rcv_rounds_samples else None,
+            'median_rcv_rounds': median_rounds
         }
     
     # Run Monte Carlo simulation (this now includes RCV uncertainty)
@@ -779,38 +904,67 @@ def calculate_nyc_primary_comprehensive():
     print(f"    Cuomo: {int(cuomo_eday):,} votes")
     print(f"    Cuomo needs {(mamdani_early_advantage/projected_eday_turnout)*100:.1f}% E-Day margin to tie")
     
-    print("\n🔄 RANKED CHOICE VOTING SIMULATION (Example Run)")
+    print("\n🔄 RANKED CHOICE VOTING SIMULATION (Monte Carlo Medians)")
     
-    # Print each round
-    for round_data in rcv_rounds:
+    # Use median rounds from Monte Carlo simulation
+    median_rounds = monte_carlo_results.get('median_rcv_rounds', rcv_rounds)
+    
+    # Debug: Check if we have median rounds
+    if 'median_rcv_rounds' in monte_carlo_results:
+        print("  (Using median values from 100,000 simulations)")
+    else:
+        print("  (WARNING: Using single simulation run, not medians)")
+    
+    # Print each round using median values
+    for round_data in median_rounds:
         print(f"\n  Round {round_data['round']}:")
         
+        # Show votes at start of round
+        display_votes = round_data.get('votes_start', {})
+        
         # Sort candidates by votes for this round
-        active_votes = {k: v for k, v in round_data['votes'].items() if v > 0}
+        active_votes = {k: v for k, v in display_votes.items() if v > 0}
         total_active_votes = sum(active_votes.values())
         for candidate, votes in sorted(active_votes.items(), key=lambda x: x[1], reverse=True):
             pct = (votes/total_active_votes)*100
             print(f"    {candidate.title()}: {int(votes):,} ({pct:.1f}%)")
         
-        if round_data['eliminated']:
-            print(f"\n    ❌ {round_data['eliminated'].title()} eliminated")
-            if round_data['transfers']:
+        if round_data.get('eliminated'):
+            eliminated_candidate = round_data['eliminated']
+            print(f"\n    ❌ {eliminated_candidate.title()} eliminated")
+            if round_data.get('transfers'):
                 print("    Transfers:")
                 for recipient, votes in round_data['transfers'].items():
-                    if votes > 0:
+                    # Don't show transfers to the eliminated candidate itself
+                    if votes > 0 and recipient != eliminated_candidate:
                         print(f"      → {recipient.title()}: {int(votes):,} votes")
     
-    # Final result - Use Monte Carlo mean for consistency
+    # Final result - Use Monte Carlo median for consistency
     print(f"\n  FINAL RESULT (Monte Carlo Median):")
-    # Calculate vote totals based on Monte Carlo mean percentages
-    final_mamdani_pct = monte_carlo_results['mean']
-    final_cuomo_pct = 100 - final_mamdani_pct
     
-    # Calculate final vote counts after exhaustion
-    # Estimate ~10% exhaustion in final round based on patterns
-    final_round_total = int(projected_total_turnout * 0.90)
-    mamdani_final_votes = int(final_round_total * final_mamdani_pct / 100)
-    cuomo_final_votes = int(final_round_total * final_cuomo_pct / 100)
+    # Get the actual final round data (last round with only 2 candidates)
+    final_round = median_rounds[-1] if median_rounds else None
+    
+    if final_round and 'votes_end' in final_round:
+        # Use actual vote counts from the final round
+        mamdani_final_votes = final_round['votes_end'].get('mamdani', 0)
+        cuomo_final_votes = final_round['votes_end'].get('cuomo', 0)
+        total_final_votes = mamdani_final_votes + cuomo_final_votes
+        
+        if total_final_votes > 0:
+            final_mamdani_pct = (mamdani_final_votes / total_final_votes) * 100
+            final_cuomo_pct = (cuomo_final_votes / total_final_votes) * 100
+        else:
+            final_mamdani_pct = monte_carlo_results['mean']
+            final_cuomo_pct = 100 - final_mamdani_pct
+    else:
+        # Fallback to Monte Carlo mean
+        final_mamdani_pct = monte_carlo_results['mean']
+        final_cuomo_pct = 100 - final_mamdani_pct
+        # Estimate vote counts
+        final_round_total = int(projected_total_turnout * 0.90)
+        mamdani_final_votes = int(final_round_total * final_mamdani_pct / 100)
+        cuomo_final_votes = int(final_round_total * final_cuomo_pct / 100)
     
     # Display in order of votes
     if final_mamdani_pct > 50:
@@ -930,12 +1084,15 @@ def calculate_nyc_primary_comprehensive():
         'monte_carlo': monte_carlo_results,
         'sensitivity': sensitivity_results,
         'rcv_rounds': rcv_rounds,
+        'median_rcv_rounds': monte_carlo_results.get('median_rcv_rounds', rcv_rounds),
         'mamdani_early_votes': mamdani_early_votes,
         'cuomo_early_votes': cuomo_early_votes,
         'mamdani_early_advantage': mamdani_early_advantage,
         'projected_total_turnout': int(projected_total_turnout),
         'heat_net_change': heat_net_change,
-        'eday_breakdown': eday_breakdown
+        'eday_breakdown': eday_breakdown,
+        'final_mamdani_votes': mamdani_final_votes,
+        'final_cuomo_votes': cuomo_final_votes
     }
 
 def save_results_to_json(results: Dict, polls: List[Dict], early_vote_data: Dict, 
@@ -944,9 +1101,12 @@ def save_results_to_json(results: Dict, polls: List[Dict], early_vote_data: Dict
                         projected_turnout: int, early_votes: int) -> None:
     """Save comprehensive model results to JSON file for web consumption."""
     
+    # Use median RCV rounds if available, otherwise fall back to single run
+    rounds_to_format = results.get('median_rcv_rounds', rcv_rounds)
+    
     # Format RCV rounds for easier consumption
     formatted_rounds = []
-    for round_data in rcv_rounds:
+    for round_data in rounds_to_format:
         round_info = {
             'round': round_data['round'],
             'candidates': [],
@@ -954,8 +1114,15 @@ def save_results_to_json(results: Dict, polls: List[Dict], early_vote_data: Dict
             'transfers': round_data.get('transfers', {})
         }
         
-        # Sort candidates by votes for this round
-        active_votes = {k: v for k, v in round_data['votes'].items() if v > 0}
+        # Use votes_start to show the state at beginning of round
+        # For compatibility, also check for 'votes' (old format)
+        if 'votes_start' in round_data:
+            display_votes = round_data['votes_start']
+        else:
+            # Fallback to old format
+            display_votes = round_data.get('votes', {})
+        
+        active_votes = {k: v for k, v in display_votes.items() if v > 0}
         total_votes = sum(active_votes.values())
         
         for candidate, votes in sorted(active_votes.items(), key=lambda x: x[1], reverse=True):
@@ -1054,8 +1221,8 @@ def save_results_to_json(results: Dict, polls: List[Dict], early_vote_data: Dict
             'final_result': {
                 'mamdani_percentage': round(results['vote_share'], 1),
                 'cuomo_percentage': round(100 - results['vote_share'], 1),
-                'mamdani_votes': int(projected_turnout * 0.90 * results['vote_share'] / 100),
-                'cuomo_votes': int(projected_turnout * 0.90 * (100 - results['vote_share']) / 100)
+                'mamdani_votes': int(results.get('final_mamdani_votes', projected_turnout * 0.90 * results['vote_share'] / 100)),
+                'cuomo_votes': int(results.get('final_cuomo_votes', projected_turnout * 0.90 * (100 - results['vote_share']) / 100))
             }
         },
         'uncertainty': {

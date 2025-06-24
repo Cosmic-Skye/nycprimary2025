@@ -663,6 +663,31 @@
                 </div>`;
         });
         
+        // Add Round 1 elimination info
+        if (firstRound.eliminated) {
+            html += `
+                <div class="mt-4 pt-4 border-t border-gray-300">
+                    <p class="text-center font-semibold mb-2">❌ ${firstRound.eliminated.charAt(0).toUpperCase() + firstRound.eliminated.slice(1)} Eliminated</p>`;
+            
+            if (firstRound.transfers) {
+                html += `<div class="text-sm space-y-1">`;
+                for (const [recipient, votes] of Object.entries(firstRound.transfers)) {
+                    if (recipient !== 'exhausted' && votes > 0 && recipient !== firstRound.eliminated) {
+                        const color = recipient === 'mamdani' ? '#3b82f6' : 
+                                     recipient === 'cuomo' ? '#F94144' : 
+                                     recipient === 'lander' ? '#F9C74F' : '#9CA3AF';
+                        const recipientName = recipient.charAt(0).toUpperCase() + recipient.slice(1);
+                        html += `<p class="text-center"><span class="font-bold" style="color: ${color}">+${formatNumber(Math.round(votes))} votes</span> → ${recipientName}</p>`;
+                    }
+                }
+                if (firstRound.transfers.exhausted > 0) {
+                    html += `<p class="text-center text-gray-500"><span class="font-bold">${formatNumber(Math.round(firstRound.transfers.exhausted))} votes</span> → Exhausted</p>`;
+                }
+                html += `</div>`;
+            }
+            html += `</div>`;
+        }
+        
         html += `</div></div><div class="flow-arrow">↓</div>`;
         
         // Intermediate rounds - show details for rounds 2 and 3
@@ -670,24 +695,29 @@
             html += `
                 <div class="w-full max-w-3xl bg-orange-50 p-6 rounded-2xl border border-orange-200 shadow-sm">
                     <h3 class="font-bold text-xl text-center mb-4 text-orange-800">Intermediate Rounds</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-center">`;
+                    <div class="space-y-4">`;
             
             // Show elimination details for middle rounds
             for (let i = 1; i < modelData.rcv_simulation.rounds.length - 1; i++) {
                 const round = modelData.rcv_simulation.rounds[i];
                 if (round.eliminated) {
                     html += `
-                        <div>
-                            <h4 class="font-semibold">❌ ${round.eliminated.charAt(0).toUpperCase() + round.eliminated.slice(1)} Eliminated</h4>
-                            <p class="text-sm text-gray-600">Round ${round.round}</p>
-                            <div class="mt-2 text-left space-y-1 text-sm">`;
+                        <div class="text-center">
+                            <h4 class="font-semibold">Round ${round.round}: ❌ ${round.eliminated.charAt(0).toUpperCase() + round.eliminated.slice(1)} Eliminated</h4>
+                            <div class="mt-2 space-y-1 text-sm">`;
                     
                     // Show transfers
                     for (const [recipient, votes] of Object.entries(round.transfers)) {
-                        if (recipient !== 'exhausted' && votes > 0) {
-                            const color = recipient === 'mamdani' ? '#3b82f6' : '#F94144';
+                        if (recipient !== 'exhausted' && votes > 0 && recipient !== round.eliminated) {
+                            const color = recipient === 'mamdani' ? '#3b82f6' : 
+                                         recipient === 'cuomo' ? '#F94144' : 
+                                         recipient === 'lander' ? '#F9C74F' : '#9CA3AF';
                             html += `<p><span class="font-bold" style="color: ${color}">+${formatNumber(Math.round(votes))} votes</span> → ${recipient.charAt(0).toUpperCase() + recipient.slice(1)}</p>`;
                         }
+                    }
+                    // Add exhausted votes
+                    if (round.transfers.exhausted > 0) {
+                        html += `<p class="text-gray-500"><span class="font-bold">${formatNumber(Math.round(round.transfers.exhausted))} votes</span> → Exhausted</p>`;
                     }
                     html += `</div></div>`;
                 }
@@ -698,9 +728,9 @@
                         <h4 class="font-bold text-center text-lg mb-2">Pre-Final Round Standings</h4>
                         <div class="space-y-2 text-sm max-w-md mx-auto">`;
             
-            // Show standings before final round
-            const penultimateRound = modelData.rcv_simulation.rounds[modelData.rcv_simulation.rounds.length - 2];
-            const activeCandidates = penultimateRound.candidates.filter(c => c.votes > 0).sort((a, b) => b.votes - a.votes);
+            // Show standings before final round - this should be the last round before the final 2
+            const lastRoundWithElimination = modelData.rcv_simulation.rounds[modelData.rcv_simulation.rounds.length - 1];
+            const activeCandidates = lastRoundWithElimination.candidates.filter(c => c.votes > 0).sort((a, b) => b.votes - a.votes);
             
             activeCandidates.forEach(candidate => {
                 html += `<p class="flex justify-between"><strong>${candidate.name}:</strong> <span class="font-semibold">${candidate.percentage}%</span> (${formatNumber(candidate.votes)} votes)</p>`;
@@ -714,15 +744,14 @@
         
         // Final round
         const lastRound = modelData.rcv_simulation.rounds[modelData.rcv_simulation.rounds.length - 1];
-        const finalRoundEliminated = modelData.rcv_simulation.rounds[modelData.rcv_simulation.rounds.length - 2];
         
         html += `
             <div class="w-full max-w-3xl bg-blue-50 p-6 rounded-2xl border-2 border-blue-300 shadow-lg">
                 <h3 class="font-bold text-xl text-center mb-2 text-blue-800">Final Round: Vote Transfers</h3>`;
         
         // Show Lander elimination details if it's the final elimination
-        if (finalRoundEliminated && finalRoundEliminated.eliminated === 'lander') {
-            const landerVotes = finalRoundEliminated.candidates.find(c => c.name === 'Lander')?.votes || 0;
+        if (lastRound && lastRound.eliminated === 'lander') {
+            const landerVotes = lastRound.candidates.find(c => c.name === 'Lander')?.votes || 0;
             const transfers = lastRound.transfers || {};
             
             html += `
