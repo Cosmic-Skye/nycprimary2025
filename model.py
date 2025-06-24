@@ -203,8 +203,12 @@ POLLS = [
         'credibility': 0.95,  # A- rating from FiveThirtyEight
         'sample_size': 833,
         'margin_error': 3.3,
-        'first_choice': {'mamdani': 32.0, 'cuomo': 35.0, 'lander': 13.0, 'adams': 8.0},
-        'rcv_final': {'mamdani': 52.0, 'cuomo': 48.0},
+        'first_choice': {
+            'mamdani': 32.4, 'cuomo': 34.9, 'lander': 12.8, 'adams': 8.1,
+            'stringer': 2.7, 'myrie': 2.1, 'tilson': 1.6, 'ramos': 1.1,
+            'blake': 0.3, 'bartholomew': 0.0, 'prince': 0.0
+        },
+        'rcv_final': {'mamdani': 51.8, 'cuomo': 48.2}, # Final round from Emerson poll
         'early_voters': {'mamdani': 41.0, 'cuomo': 31.0}
     },
     {
@@ -214,7 +218,11 @@ POLLS = [
         'credibility': 0.98,  # A+ rating from FiveThirtyEight
         'sample_size': 644,
         'margin_error': 3.9,
-        'first_choice': {'mamdani': 27.0, 'cuomo': 38.0, 'lander': 7.0, 'adams': 7.0},
+        'first_choice': {
+            'mamdani': 27.0, 'cuomo': 38.0, 'lander': 7.0, 'adams': 7.0,
+            'stringer': 0.0, 'myrie': 0.0, 'tilson': 0.0, 'ramos': 0.0,
+            'blake': 0.0, 'bartholomew': 0.0, 'prince': 0.0
+        },
         'rcv_final': {'mamdani': 45.0, 'cuomo': 55.0},
         'early_voters': None
     },
@@ -225,7 +233,11 @@ POLLS = [
         'credibility': 0.70,  # Conservative house effect, adjusted
         'sample_size': 606,
         'margin_error': 3.9,
-        'first_choice': {'mamdani': 30.0, 'cuomo': 43.0, 'lander': 11.0, 'adams': 8.0},
+        'first_choice': {
+            'mamdani': 30.0, 'cuomo': 43.0, 'lander': 11.0, 'adams': 8.0,
+            'stringer': 0.0, 'myrie': 0.0, 'tilson': 0.0, 'ramos': 0.0,
+            'blake': 0.0, 'bartholomew': 0.0, 'prince': 0.0
+        },
         'rcv_final': {'mamdani': 44.0, 'cuomo': 56.0},
         'early_voters': None
     }
@@ -279,23 +291,42 @@ ENDORSEMENTS = {
 }
 
 # RCV Transfer Patterns (Empirical data from Emerson poll RCV simulation)
+# RCV Transfer Patterns (Derived from Emerson Poll, June 2025)
 RCV_TRANSFERS = {
-    'lander': {
-        'mamdani': {'mean': 0.462, 'std': 0.05},   # 46.2% based on actual poll
-        'cuomo': {'mean': 0.237, 'std': 0.05},     # 23.7% based on actual poll
-        'exhausted': {'mean': 0.301, 'std': 0.05}  # 30.1% HIGH exhaustion rate
+    'blake': {
+        'myrie': {'mean': 0.618, 'std': 0.1}, 'ramos': {'mean': 0.311, 'std': 0.1}, 'lander': {'mean': 0.04, 'std': 0.02},
+        'mamdani': {'mean': 0.02, 'std': 0.01}, 'cuomo': {'mean': 0.01, 'std': 0.01}, 'adams': {'mean': 0.01, 'std': 0.01},
+        'stringer': {'mean': 0.01, 'std': 0.01}, 'tilson': {'mean': 0.01, 'std': 0.01}, 'exhausted': {'mean': 0.03, 'std': 0.02}
+    },
+    'ramos': {
+        'mamdani': {'mean': 0.092, 'std': 0.05}, 'stringer': {'mean': 0.367, 'std': 0.1}, 'myrie': {'mean': 0.183, 'std': 0.1},
+        'tilson': {'mean': 0.184, 'std': 0.1}, 'lander': {'mean': 0.092, 'std': 0.05}, 'cuomo': {'mean': 0.01, 'std': 0.01},
+        'adams': {'mean': 0.01, 'std': 0.01}, 'exhausted': {'mean': 0.04, 'std': 0.03}
+    },
+    'tilson': {
+        'mamdani': {'mean': 0.181, 'std': 0.1}, 'stringer': {'mean': 0.181, 'std': 0.1}, 'myrie': {'mean': 0.181, 'std': 0.1},
+        'cuomo': {'mean': 0.181, 'std': 0.1}, 'lander': {'mean': 0.181, 'std': 0.1}, 'adams': {'mean': 0.02, 'std': 0.01},
+        'exhausted': {'mean': 0.044, 'std': 0.03}
+    },
+    'myrie': {
+        'mamdani': {'mean': 4/25, 'std': 0.1}, 'stringer': {'mean': 2/25, 'std': 0.1}, 'adams': {'mean': 11/25, 'std': 0.1},
+        'cuomo': {'mean': 1/25, 'std': 0.05}, 'lander': {'mean': 5/25, 'std': 0.1}, 'exhausted': {'mean': 2/25, 'std': 0.05}
+    },
+    'stringer': {
+        'adams': {'mean': 9/31, 'std': 0.1}, 'cuomo': {'mean': 5/31, 'std': 0.1}, 'lander': {'mean': 12/31, 'std': 0.1},
+        'mamdani': {'mean': 0.02, 'std': 0.01}, 'exhausted': {'mean': 5/31, 'std': 0.05}
     },
     'adams': {
-        'mamdani': {'mean': 0.333, 'std': 0.05},   # 33.3% - surprising cross-bloc
-        'cuomo': {'mean': 0.161, 'std': 0.05},     # 16.1% - lower than expected
-        'lander': {'mean': 0.322, 'std': 0.05},    # 32.2% - to other progressive
-        'exhausted': {'mean': 0.184, 'std': 0.03}  # 18.4% exhaustion
+        'mamdani': {'mean': 29/87, 'std': 0.1}, 'cuomo': {'mean': 14/87, 'std': 0.1},
+        'lander': {'mean': 28/87, 'std': 0.1}, 'exhausted': {'mean': 16/87, 'std': 0.05}
     },
-    'others': {
-        'mamdani': {'mean': 0.35, 'std': 0.10},    # Progressive-leaning others
-        'cuomo': {'mean': 0.30, 'std': 0.10},      # Moderate-leaning others
-        'lander': {'mean': 0.15, 'std': 0.05},     # Some progressive alignment
-        'exhausted': {'mean': 0.20, 'std': 0.05}   # Lower exhaustion with more options
+    'lander': {
+        'mamdani': {'mean': 72/156, 'std': 0.1}, 'cuomo': {'mean': 37/156, 'std': 0.1},
+        'exhausted': {'mean': 47/156, 'std': 0.05}
+    },
+    'others': { # Fallback for any other candidates
+        'mamdani': {'mean': 0.35, 'std': 0.10}, 'cuomo': {'mean': 0.30, 'std': 0.10},
+        'lander': {'mean': 0.15, 'std': 0.05}, 'exhausted': {'mean': 0.20, 'std': 0.05}
     }
 }
 
@@ -428,46 +459,39 @@ def calculate_nyc_primary_comprehensive():
     # Apply overall first-choice percentages from weighted polling
     # FIXED: Use weighted averages and ensure percentages sum to 100%
     # Calculate weighted averages for all candidates
-    mamdani_weighted_first = baseline_first_choice / 100.0  # From weighted average
-    cuomo_weighted_first = 0.369  # 36.9% weighted average
-    lander_weighted_first = 0.109  # 10.9% weighted average
-    adams_weighted_first = 0.077  # 7.7% weighted average
-    
+    # Calculate weighted averages for all candidates
+    weighted_sums = Counter()
+    total_weight = 0
+    for poll in POLLS:
+        weight = calculate_poll_weight(poll)
+        for candidate, pct in poll['first_choice'].items():
+            weighted_sums[candidate] += pct * weight
+        total_weight += weight
+
+    if total_weight == 0:
+        raise ValueError("Total poll weight is zero")
+
+    first_choice_weighted_avg = {c: s / total_weight / 100.0 for c, s in weighted_sums.items()}
+
     # Calculate others and undecided
-    others_weighted_first = 1.0 - (mamdani_weighted_first + cuomo_weighted_first + 
-                                  lander_weighted_first + adams_weighted_first)
+    # The 'others' category will be the sum of all candidates not in the main list
+    main_candidates = ['mamdani', 'cuomo', 'lander', 'adams', 'stringer', 'myrie', 'tilson', 'ramos', 'blake']
+    others_weighted_first = sum(v for k, v in first_choice_weighted_avg.items() if k not in main_candidates)
     
     # From the cross-tabs: 4% are undecided, need to redistribute
     undecided_rate = 0.04  # 4% undecided from poll
-    actual_others = max(0.05, others_weighted_first - undecided_rate)  # Other actual candidates
     
-    # Redistribute undecided based on likelihood patterns from cross-tabs:
-    # Higher propensity among: Black voters (5.6%), 30-39 (6.9%), some college (9.3%)
-    # Lower propensity among: White (2.8%), college grads (1.7%)
-    # Assume undecided break similarly to decided voters with slight lean to frontrunners
-    
-    # Redistribute the 4% undecided proportionally with a slight boost to top 2
-    redistribution_weights = {
-        'mamdani': mamdani_weighted_first * 1.1,  # 10% boost for frontrunner effect
-        'cuomo': cuomo_weighted_first * 1.1,      # 10% boost for frontrunner effect  
-        'lander': lander_weighted_first * 0.9,     # 10% penalty for lower name recognition
-        'adams': adams_weighted_first * 0.9,       # 10% penalty for lower name recognition
-        'others': actual_others * 0.8              # 20% penalty for lowest name recognition
-    }
+    # Redistribute undecided voters
+    redistribution_weights = {c: v for c, v in first_choice_weighted_avg.items()}
     
     # Normalize redistribution weights
     total_weight = sum(redistribution_weights.values())
-    for candidate in redistribution_weights:
-        redistribution_weights[candidate] /= total_weight
+    if total_weight > 0:
+        for candidate in redistribution_weights:
+            redistribution_weights[candidate] /= total_weight
     
     # Apply redistribution of undecided voters
-    first_choice_pcts = {
-        'mamdani': mamdani_weighted_first + undecided_rate * redistribution_weights['mamdani'],
-        'cuomo': cuomo_weighted_first + undecided_rate * redistribution_weights['cuomo'],
-        'lander': lander_weighted_first + undecided_rate * redistribution_weights['lander'],
-        'adams': adams_weighted_first + undecided_rate * redistribution_weights['adams'],
-        'others': actual_others + undecided_rate * redistribution_weights['others']
-    }
+    first_choice_pcts = {c: v + undecided_rate * redistribution_weights.get(c, 0) for c, v in first_choice_weighted_avg.items()}
     
     # Normalize to ensure exact sum of 1.0
     total_pct = sum(first_choice_pcts.values())
@@ -480,9 +504,10 @@ def calculate_nyc_primary_comprehensive():
         f"First choice percentages must sum to 1.0, got {sum(first_choice_pcts.values())}"
     
     # Apply momentum shift
-    momentum_shift = 0.015  # 1.5% shift from Cuomo to Mamdani
-    first_choice_pcts['mamdani'] += momentum_shift
-    first_choice_pcts['cuomo'] -= momentum_shift
+    # No momentum shift in this version, relying purely on polling data
+    # momentum_shift = 0.015  # 1.5% shift from Cuomo to Mamdani
+    # first_choice_pcts['mamdani'] += momentum_shift
+    # first_choice_pcts['cuomo'] -= momentum_shift
     
     # Calculate vote totals - FIXED: Use integers for vote counts
     first_choice_totals = {}
@@ -518,7 +543,7 @@ def calculate_nyc_primary_comprehensive():
             lowest = min(active_candidates.keys(), key=lambda x: active_candidates[x])
             
             # Track transfers
-            transfers = {}
+            transfers = {c: 0 for c in active_candidates if c != lowest}
             eliminated_votes = votes[lowest]
             round_exhausted = 0
             
@@ -542,21 +567,10 @@ def calculate_nyc_primary_comprehensive():
                         rate = max(0, random.gauss(params['mean'], params['std']))
                         raw_rates[recipient] = rate
             
-            # FIXED: Add missing active candidates with default transfer rates
-            # If pattern doesn't specify transfers to an active candidate, add them
+            # Ensure all active candidates are in the transfer list, even with zero transfers.
             for candidate in active_candidates:
-                if candidate not in raw_rates and candidate != lowest:
-                    # Use a default transfer rate for unspecified candidates
-                    # Proportional to what's left after specified transfers
-                    remaining_prob = 1.0 - sum(pattern.get(c, {'mean': 0})['mean'] 
-                                              for c in pattern if c != 'exhausted')
-                    if remaining_prob > 0:
-                        # Distribute remaining probability among unspecified candidates
-                        num_unspecified = len([c for c in active_candidates 
-                                             if c not in pattern and c != lowest])
-                        if num_unspecified > 0:
-                            default_rate = remaining_prob / num_unspecified
-                            raw_rates[candidate] = max(0, random.gauss(default_rate, 0.05))
+                if candidate != lowest and candidate not in raw_rates:
+                    raw_rates[candidate] = 0.0
             
             # Calculate total of raw rates
             total_raw_rate = sum(raw_rates.values())
@@ -934,9 +948,11 @@ def calculate_nyc_primary_comprehensive():
             print(f"\n    ❌ {eliminated_candidate.title()} eliminated")
             if round_data.get('transfers'):
                 print("    Transfers:")
-                for recipient, votes in round_data['transfers'].items():
-                    # Don't show transfers to the eliminated candidate itself
-                    if votes > 0 and recipient != eliminated_candidate:
+                # Sort transfers by amount for readability
+                sorted_transfers = sorted(round_data['transfers'].items(), key=lambda item: item[1], reverse=True)
+                for recipient, votes in sorted_transfers:
+                    # Show all transfers, even if zero, but exclude the eliminated candidate
+                    if recipient != eliminated_candidate:
                         print(f"      → {recipient.title()}: {int(votes):,} votes")
     
     # Final result - Use Monte Carlo median for consistency
@@ -975,6 +991,7 @@ def calculate_nyc_primary_comprehensive():
         print(f"    Mamdani: {mamdani_final_votes:,} ({final_mamdani_pct:.1f}%)")
     
     print("\n🌊 FACTORS INCORPORATED")
+    momentum_shift = 0.0 # Define for printing purposes as it's no longer used in calculation
     print(f"  Momentum adjustment: {momentum_shift*100:.1f}% of voters shift from Cuomo to Mamdani")
     print(f"  Cross-Endorsement: {RCV_TRANSFERS['lander']['mamdani']['mean']*100:.0f}% Lander→Mamdani transfers (±{RCV_TRANSFERS['lander']['mamdani']['std']*100:.0f}%)")
     
@@ -1284,119 +1301,16 @@ if __name__ == "__main__":
         print(f"  Projected vote share: {result['vote_share']:.1f}%")
         print(f"  95% CI: [{result['monte_carlo']['percentile_2_5']:.1f}%, {result['monte_carlo']['percentile_97_5']:.1f}%]")
         
-        # For now, save with placeholder values for data we need to extract
-        # In a production version, we would properly return these from the function
-        # Access the global variables from the function
-        POLLS = calculate_nyc_primary_comprehensive.__code__.co_consts
-        # For now, use the data directly
-        POLLS = [
-            {
-                'name': 'Emerson',
-                'date': 'June 18-20',
-                'days_old': 3,
-                'credibility': 0.95,
-                'sample_size': 833,
-                'margin_error': 3.3,
-                'first_choice': {'mamdani': 32.0, 'cuomo': 35.0, 'lander': 13.0, 'adams': 8.0},
-                'rcv_final': {'mamdani': 52.0, 'cuomo': 48.0},
-                'early_voters': {'mamdani': 41.0, 'cuomo': 31.0}
-            },
-            {
-                'name': 'Marist',
-                'date': 'June 11-16',
-                'days_old': 7,
-                'credibility': 0.98,
-                'sample_size': 644,
-                'margin_error': 3.9,
-                'first_choice': {'mamdani': 27.0, 'cuomo': 38.0, 'lander': 7.0, 'adams': 7.0},
-                'rcv_final': {'mamdani': 45.0, 'cuomo': 55.0},
-                'early_voters': None
-            },
-            {
-                'name': 'Manhattan Institute',
-                'date': 'June 11-16',
-                'days_old': 7,
-                'credibility': 0.70,
-                'sample_size': 606,
-                'margin_error': 3.9,
-                'first_choice': {'mamdani': 30.0, 'cuomo': 43.0, 'lander': 11.0, 'adams': 8.0},
-                'rcv_final': {'mamdani': 44.0, 'cuomo': 56.0},
-                'early_voters': None
-            }
-        ]
-        
-        EARLY_VOTE_BY_BOROUGH = {
-            'Manhattan': {'total': 122642, 'pct_of_total': 31.8, 'mamdani_est': 0.45, 'cuomo_est': 0.28},
-            'Brooklyn': {'total': 142724, 'pct_of_total': 37.1, 'mamdani_est': 0.44, 'cuomo_est': 0.29},
-            'Queens': {'total': 75778, 'pct_of_total': 19.7, 'mamdani_est': 0.38, 'cuomo_est': 0.34},
-            'Bronx': {'total': 30816, 'pct_of_total': 8.0, 'mamdani_est': 0.31, 'cuomo_est': 0.42},
-            'Staten Island': {'total': 12367, 'pct_of_total': 3.2, 'mamdani_est': 0.28, 'cuomo_est': 0.45}
-        }
-        
-        WEATHER_FORECAST = {
-            'high_temp_f': 101,
-            'heat_index_f': 106,
-            'humidity': 65,
-            'is_record': True,
-            'poll_sites_no_ac': 600,
-            'total_poll_sites': 1213
-        }
-        
-        TOTAL_EARLY_VOTES = 384327
-        
-        # Get the actual RCV rounds from the model
-        # For now, create more complete placeholder data
-        rcv_rounds_placeholder = [
-            {
-                'round': 1,
-                'votes': {'mamdani': 342036, 'cuomo': 367370, 'lander': 97672, 'adams': 65114, 'others': 81393},
-                'eliminated': None,
-                'transfers': {}
-            },
-            {
-                'round': 2,
-                'votes': {'mamdani': 364827, 'cuomo': 393416, 'lander': 97672, 'adams': 0, 'others': 81393},
-                'eliminated': 'adams',
-                'transfers': {'mamdani': 22791, 'cuomo': 26045, 'exhausted': 16278}
-            },
-            {
-                'round': 3,
-                'votes': {'mamdani': 405523, 'cuomo': 421904, 'lander': 97672, 'adams': 0, 'others': 0},
-                'eliminated': 'others',
-                'transfers': {'mamdani': 40696, 'cuomo': 28487, 'exhausted': 12210}
-            },
-            {
-                'round': 4,
-                'votes': {'mamdani': 469010, 'cuomo': 441438, 'lander': 0, 'adams': 0, 'others': 0},
-                'eliminated': 'lander',
-                'transfers': {'mamdani': 73487, 'cuomo': 14656, 'exhausted': 9527}
-            }
-        ]
-        
-        eday_breakdown_placeholder = {
-            '18-24': {'total': 27464, 'mamdani': 17852, 'cuomo': 9612},
-            '25-34': {'total': 38450, 'mamdani': 23070, 'cuomo': 15380},
-            '35-49': {'total': 122868, 'mamdani': 55290, 'cuomo': 67577},
-            '50-64': {'total': 151779, 'mamdani': 53122, 'cuomo': 98656},
-            '65+': {'total': 89043, 'mamdani': 22260, 'cuomo': 66782}
-        }
-        
-        # Add additional data to results
-        result['baseline_rcv'] = 48.1
-        result['baseline_first'] = 30.0
-        result['mamdani_early_votes'] = 159798
-        result['cuomo_early_votes'] = 120002
-        result['mamdani_early_advantage'] = 39796
-        
+        # The model now returns all necessary data, so we pass it directly
         save_results_to_json(
-            result, 
-            POLLS, 
+            result,
+            POLLS,
             EARLY_VOTE_BY_BOROUGH,
-            result.get('rcv_rounds', rcv_rounds_placeholder),  # Use actual RCV rounds if available
-            result.get('eday_breakdown', eday_breakdown_placeholder),
+            result['rcv_rounds'],
+            result['eday_breakdown'],
             WEATHER_FORECAST,
-            result.get('heat_net_change', -30000),  # heat net change from model
-            result.get('projected_total_turnout', 971340),  # projected turnout from model
+            result['heat_net_change'],
+            result['projected_total_turnout'],
             TOTAL_EARLY_VOTES
         )
         
