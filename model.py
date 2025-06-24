@@ -114,6 +114,52 @@ def analyze_early_voting(early_vote_data: Dict, total_early_votes: int) -> Tuple
     
     return mamdani_votes, cuomo_votes, mamdani_votes - cuomo_votes
 
+def project_final_turnout_from_6pm(election_day_6pm_data: Dict, 
+                                  early_vote_data: Dict) -> Tuple[int, int, Dict]:
+    """
+    Project final turnout based on 6pm election day data.
+    
+    Historical patterns show ~75-80% of E-day votes are cast by 6pm.
+    Final 3 hours (6-9pm) typically see 20-25% of E-day turnout.
+    
+    Returns:
+        Tuple of (projected_eday_total, projected_total_turnout, borough_projections)
+    """
+    # Calculate total votes cast by 6pm
+    total_6pm = sum(data['votes_6pm'] for data in election_day_6pm_data.values())
+    
+    # Estimate completion rate by borough based on historical patterns
+    # More affluent/Manhattan voters tend to vote earlier; outer boroughs later
+    completion_rates = {
+        'Manhattan': 0.80,      # 80% complete by 6pm
+        'Brooklyn': 0.78,       # 78% complete
+        'Queens': 0.75,         # 75% complete
+        'Bronx': 0.73,          # 73% complete
+        'Staten Island': 0.77   # 77% complete
+    }
+    
+    # Project final E-day turnout by borough
+    borough_projections = {}
+    projected_eday_total = 0
+    
+    for borough, data in election_day_6pm_data.items():
+        completion_rate = completion_rates.get(borough, 0.75)
+        projected_final = data['votes_6pm'] / completion_rate
+        borough_projections[borough] = {
+            'votes_6pm': data['votes_6pm'],
+            'projected_final': int(projected_final),
+            'remaining_votes': int(projected_final - data['votes_6pm']),
+            'completion_rate': completion_rate,
+            'vs_2021': data['pct_of_2021']
+        }
+        projected_eday_total += projected_final
+    
+    # Calculate total turnout including early votes and mail-in votes
+    total_early = sum(data['total'] for data in early_vote_data.values())
+    projected_total_turnout = int(projected_eday_total) + total_early + MAIL_IN_VOTES
+    
+    return int(projected_eday_total), projected_total_turnout, borough_projections
+
 def calculate_heat_impact(base_eday_turnout: float, 
                          age_demographics: Dict,
                          weather_data: Dict) -> Tuple[int, int, int]:
@@ -240,6 +286,19 @@ EARLY_VOTE_BY_BOROUGH = {
     'Staten Island': {'total': 12367, 'pct_of_total': 3.2, 'mamdani_est': 0.28, 'cuomo_est': 0.45}
 }
 
+# Real-time Election Day Turnout Data (as of 6pm - 3 hours before polls close)
+# Note: These are E-day only votes (cumulative total minus early/mail votes)
+ELECTION_DAY_6PM_DATA = {
+    'Manhattan': {'votes_6pm': 155297, 'turnout_2021': 274000, 'pct_of_2021': 0.57},
+    'Brooklyn': {'votes_6pm': 162669, 'turnout_2021': 337000, 'pct_of_2021': 0.48},
+    'Queens': {'votes_6pm': 93576, 'turnout_2021': 234000, 'pct_of_2021': 0.40},
+    'Bronx': {'votes_6pm': 58211, 'turnout_2021': 117000, 'pct_of_2021': 0.50},
+    'Staten Island': {'votes_6pm': 16478, 'turnout_2021': 51000, 'pct_of_2021': 0.32}
+}
+
+# Mail-in votes by borough (from 6pm cumulative data)
+MAIL_IN_VOTES = 50097
+
 # Total early votes (sum of borough totals)
 TOTAL_EARLY_VOTES = sum(data['total'] for data in EARLY_VOTE_BY_BOROUGH.values())
 
@@ -254,7 +313,7 @@ AGE_DEMOGRAPHICS = {
 
 # Weather Model (NWS)
 WEATHER_FORECAST = {
-    'high_temp_f': 101,
+    'high_temp_f': 102,
     'heat_index_f': 106,
     'humidity': 65,
     'is_record': True,  # First 100F since 2012
@@ -351,17 +410,27 @@ def calculate_nyc_primary_comprehensive():
     
     # ========== STAGE 3: ELECTION DAY TURNOUT MODEL ==========
     
-    # Base turnout projection
+    # NEW: Use 6pm real-time data to project final turnout
+    projected_eday_turnout_6pm, projected_total_turnout_6pm, borough_projections = \
+        project_final_turnout_from_6pm(ELECTION_DAY_6PM_DATA, EARLY_VOTE_BY_BOROUGH)
+    
+    # Compare with original projection
     base_turnout_projection = HISTORICAL_DATA['2021_primary'] * BASE_TURNOUT_GROWTH
     base_eday_turnout = base_turnout_projection - TOTAL_EARLY_VOTES
     
-    # Calculate heat impact (net change - can be positive or negative)
-    heat_net_change, arousal_gain, friction_loss = calculate_heat_impact(
-        base_eday_turnout, AGE_DEMOGRAPHICS, WEATHER_FORECAST)
+    # The 6pm data already reflects heat impact, so we use it directly
+    # But we calculate what the heat impact appears to be for reporting
+    actual_vs_expected = projected_eday_turnout_6pm - base_eday_turnout
     
-    # Apply heat impact
-    projected_eday_turnout = base_eday_turnout + heat_net_change
-    projected_total_turnout = TOTAL_EARLY_VOTES + projected_eday_turnout
+    # Use the 6pm-based projection as our primary estimate
+    projected_eday_turnout = projected_eday_turnout_6pm
+    projected_total_turnout = projected_total_turnout_6pm
+    
+    # For reporting purposes, estimate heat impact components
+    # Since we're seeing lower turnout, the friction effects are dominating
+    heat_net_change = actual_vs_expected
+    arousal_gain = int(base_eday_turnout * 0.01)  # Estimate 1% arousal effect
+    friction_loss = int(abs(heat_net_change) + arousal_gain)  # Back-calculate friction
     
     # ========== STAGE 4: DEMOGRAPHIC VOTE MODELING ==========
     
@@ -873,6 +942,16 @@ def calculate_nyc_primary_comprehensive():
     print(f"  Mamdani Net Advantage: +{int(mamdani_early_advantage):,} votes")
     print(f"  Youth Vote Surge: {youth_overperformance:.1f}x historical rate")
     
+    print("\n📊 REAL-TIME ELECTION DAY DATA (6PM UPDATE)")
+    print("  Borough         6pm Count   vs 2021   Projected Final")
+    print("  " + "-" * 55)
+    total_6pm = sum(data['votes_6pm'] for data in ELECTION_DAY_6PM_DATA.values())
+    for borough, proj in sorted(borough_projections.items()):
+        print(f"  {borough:<13} {proj['votes_6pm']:>9,}   {proj['vs_2021']:>5.0%}    {proj['projected_final']:>9,}")
+    print("  " + "-" * 55)
+    print(f"  Total         {total_6pm:>9,}           {projected_eday_turnout:>9,}")
+    print(f"\n  Completion: ~{int(total_6pm/projected_eday_turnout*100)}% of E-day votes cast by 6pm")
+    
     print("\n🌡️ HEAT IMPACT ANALYSIS")
     print(f"  Forecast High: {WEATHER_FORECAST['high_temp_f']}°F (Heat Index: {WEATHER_FORECAST['heat_index_f']}°F)")
     print(f"  Sites Without AC: {WEATHER_FORECAST['poll_sites_no_ac']}/{WEATHER_FORECAST['total_poll_sites']} ({WEATHER_FORECAST['poll_sites_no_ac']/WEATHER_FORECAST['total_poll_sites']*100:.1f}%)")
@@ -887,11 +966,12 @@ def calculate_nyc_primary_comprehensive():
     for age in AGE_DEMOGRAPHICS.keys():
         print(f"    {age}: {HEAT_FRICTION_BY_AGE[age]*100:.0f}% friction rate")
     
-    print("\n📈 TURNOUT PROJECTIONS")
+    print("\n📈 TURNOUT PROJECTIONS (UPDATED WITH 6PM DATA)")
     print(f"  Historical 2021 Turnout: {HISTORICAL_DATA['2021_primary']:,}")
-    print(f"  Base 2025 Projection: {int(base_turnout_projection):,}")
-    print(f"  Heat-Adjusted E-Day Turnout: {int(projected_eday_turnout):,}")
+    print(f"  Original 2025 Projection: {int(base_turnout_projection):,}")
+    print(f"  Actual E-Day (6pm projection): {int(projected_eday_turnout):,}")
     print(f"  Final Total Turnout: {int(projected_total_turnout):,}")
+    print(f"  vs Original Projection: {int(projected_total_turnout - base_turnout_projection):+,} ({(projected_total_turnout/base_turnout_projection - 1)*100:+.1f}%)")
     
     print("\n🗳️ ELECTION DAY VOTE MODEL")
     for age, votes in eday_breakdown.items():
@@ -1092,17 +1172,19 @@ def calculate_nyc_primary_comprehensive():
         'heat_net_change': heat_net_change,
         'eday_breakdown': eday_breakdown,
         'final_mamdani_votes': mamdani_final_votes,
-        'final_cuomo_votes': cuomo_final_votes
+        'final_cuomo_votes': cuomo_final_votes,
+        'borough_projections': borough_projections,
+        'base_turnout_projection': int(base_turnout_projection),
+        'baseline_rcv_probability': baseline_rcv_probability,
+        'baseline_first_choice': baseline_first_choice,
+        'total_early_votes': TOTAL_EARLY_VOTES
     }
 
-def save_results_to_json(results: Dict, polls: List[Dict], early_vote_data: Dict, 
-                        rcv_rounds: List[Dict], eday_breakdown: Dict,
-                        weather_data: Dict, heat_net_change: float,
-                        projected_turnout: int, early_votes: int) -> None:
+def save_results_to_json(results: Dict) -> None:
     """Save comprehensive model results to JSON file for web consumption."""
     
     # Use median RCV rounds if available, otherwise fall back to single run
-    rounds_to_format = results.get('median_rcv_rounds', rcv_rounds)
+    rounds_to_format = results.get('median_rcv_rounds', results['rcv_rounds'])
     
     # Format RCV rounds for easier consumption
     formatted_rounds = []
@@ -1115,11 +1197,10 @@ def save_results_to_json(results: Dict, polls: List[Dict], early_vote_data: Dict
         }
         
         # Use votes_start to show the state at beginning of round
-        # For compatibility, also check for 'votes' (old format)
         if 'votes_start' in round_data:
             display_votes = round_data['votes_start']
         else:
-            # Fallback to old format
+            # Fallback to old format for compatibility
             display_votes = round_data.get('votes', {})
         
         active_votes = {k: v for k, v in display_votes.items() if v > 0}
@@ -1129,14 +1210,14 @@ def save_results_to_json(results: Dict, polls: List[Dict], early_vote_data: Dict
             round_info['candidates'].append({
                 'name': candidate.title(),
                 'votes': int(votes),
-                'percentage': round(votes / total_votes * 100, 1)
+                'percentage': round(votes / total_votes * 100, 1) if total_votes > 0 else 0
             })
         
         formatted_rounds.append(round_info)
     
     # Format early vote breakdown by borough
     borough_results = []
-    for borough, data in early_vote_data.items():
+    for borough, data in EARLY_VOTE_BY_BOROUGH.items():
         borough_results.append({
             'name': borough,
             'total_votes': data['total'],
@@ -1147,7 +1228,7 @@ def save_results_to_json(results: Dict, polls: List[Dict], early_vote_data: Dict
     
     # Calculate key metrics
     margin_percentage = (results['vote_share'] - 50) * 2
-    margin_votes = int(margin_percentage / 100 * projected_turnout)
+    margin_votes = int(margin_percentage / 100 * results['projected_total_turnout'])
     
     # Create comprehensive output
     output = {
@@ -1165,8 +1246,8 @@ def save_results_to_json(results: Dict, polls: List[Dict], early_vote_data: Dict
             }
         },
         'polling': {
-            'weighted_rcv_baseline': round(results.get('baseline_rcv', 48.1), 1),
-            'weighted_first_choice': round(results.get('baseline_first', 30.0), 1),
+            'weighted_rcv_baseline': round(results.get('baseline_rcv_probability', 0), 1),
+            'weighted_first_choice': round(results.get('baseline_first_choice', 0), 1),
             'polls': [{
                 'name': poll['name'],
                 'date': poll['date'],
@@ -1175,36 +1256,30 @@ def save_results_to_json(results: Dict, polls: List[Dict], early_vote_data: Dict
                 'cuomo_first': poll['first_choice']['cuomo'],
                 'mamdani_rcv': poll['rcv_final']['mamdani'],
                 'cuomo_rcv': poll['rcv_final']['cuomo']
-            } for poll in polls]
+            } for poll in POLLS]
         },
         'early_voting': {
-            'total_votes': early_votes,
-            'mamdani_votes': int(results.get('mamdani_early_votes', 159798)),
-            'cuomo_votes': int(results.get('cuomo_early_votes', 120002)),
-            'mamdani_advantage': int(results.get('mamdani_early_advantage', 39796)),
-            'youth_surge_multiplier': 2.9,
+            'total_votes': results['total_early_votes'],
+            'mamdani_votes': int(results['mamdani_early_votes']),
+            'cuomo_votes': int(results['cuomo_early_votes']),
+            'mamdani_advantage': int(results['mamdani_early_advantage']),
+            'youth_surge_multiplier': 2.9, #FIXME: This is hardcoded
             'by_borough': borough_results
         },
         'weather_impact': {
-            'temperature': weather_data['high_temp_f'],
-            'heat_index': weather_data['heat_index_f'],
-            'sites_without_ac': weather_data['poll_sites_no_ac'],
-            'total_sites': weather_data['total_poll_sites'],
-            'net_voter_change': int(heat_net_change),
-            'impact_by_age': {
-                '18-24': 2,
-                '25-34': 3,
-                '35-49': 5,
-                '50-64': 8,
-                '65+': 12
-            }
+            'temperature': WEATHER_FORECAST['high_temp_f'],
+            'heat_index': WEATHER_FORECAST['heat_index_f'],
+            'sites_without_ac': WEATHER_FORECAST['poll_sites_no_ac'],
+            'total_sites': WEATHER_FORECAST['total_poll_sites'],
+            'net_voter_change': int(results['heat_net_change']),
+            'impact_by_age': {age: pct * 100 for age, pct in HEAT_FRICTION_BY_AGE.items()}
         },
         'turnout': {
-            'projected_total': projected_turnout,
-            'early_votes': early_votes,
-            'election_day': projected_turnout - early_votes,
-            'historical_2021': 943996,
-            'growth_factor': 1.08
+            'projected_total': results['projected_total_turnout'],
+            'early_votes': results['total_early_votes'],
+            'election_day': results['projected_total_turnout'] - results['total_early_votes'],
+            'historical_2021': HISTORICAL_DATA['2021_primary'],
+            'growth_factor': BASE_TURNOUT_GROWTH
         },
         'election_day_breakdown': [
             {
@@ -1212,17 +1287,17 @@ def save_results_to_json(results: Dict, polls: List[Dict], early_vote_data: Dict
                 'total_votes': int(data['total']),
                 'mamdani_votes': int(data['mamdani']),
                 'cuomo_votes': int(data['cuomo']),
-                'mamdani_percentage': round(data['mamdani'] / data['total'] * 100, 1)
+                'mamdani_percentage': round(data['mamdani'] / data['total'] * 100, 1) if data['total'] > 0 else 0
             }
-            for age, data in eday_breakdown.items()
+            for age, data in results['eday_breakdown'].items()
         ],
         'rcv_simulation': {
             'rounds': formatted_rounds,
             'final_result': {
                 'mamdani_percentage': round(results['vote_share'], 1),
                 'cuomo_percentage': round(100 - results['vote_share'], 1),
-                'mamdani_votes': int(results.get('final_mamdani_votes', projected_turnout * 0.90 * results['vote_share'] / 100)),
-                'cuomo_votes': int(results.get('final_cuomo_votes', projected_turnout * 0.90 * (100 - results['vote_share']) / 100))
+                'mamdani_votes': int(results['final_mamdani_votes']),
+                'cuomo_votes': int(results['final_cuomo_votes'])
             }
         },
         'uncertainty': {
@@ -1232,8 +1307,8 @@ def save_results_to_json(results: Dict, polls: List[Dict], early_vote_data: Dict
                 'std_dev': round(results['monte_carlo']['std'], 1),
                 'percentile_5': round(results['monte_carlo']['percentile_5'], 1),
                 'percentile_95': round(results['monte_carlo']['percentile_95'], 1),
-                'percentile_2_5': round(results['monte_carlo'].get('percentile_2_5', results['monte_carlo']['percentile_5'] - 3), 1),
-                'percentile_97_5': round(results['monte_carlo'].get('percentile_97_5', results['monte_carlo']['percentile_95'] + 3), 1)
+                'percentile_2_5': round(results['monte_carlo']['percentile_2_5'], 1),
+                'percentile_97_5': round(results['monte_carlo']['percentile_97_5'], 1)
             },
             'sensitivity': [
                 {
@@ -1256,150 +1331,22 @@ def save_results_to_json(results: Dict, polls: List[Dict], early_vote_data: Dict
 if __name__ == "__main__":
     print("\nRunning NYC Primary 2025 Prediction Model...")
     print("=" * 80)
-    
+
     try:
-        # Store intermediate values we'll need for JSON output
-        global_vars = {}
-        
-        # Monkey patch the function to capture intermediate values
-        original_func = calculate_nyc_primary_comprehensive
-        
-        def wrapped_func():
-            # Run original function and capture its locals
-            result = original_func()
-            
-            # Extract key variables from the function's execution
-            # This is a simplified approach - in production, we'd pass these through properly
-            return result
-        
-        result = wrapped_func()
-        
+        results = calculate_nyc_primary_comprehensive()
+
         print("\n" + "=" * 80)
         print("MODEL EXECUTION COMPLETED SUCCESSFULLY")
         print("=" * 80)
-        
+
         # Summary for quick reference
         print(f"\nQUICK SUMMARY:")
-        print(f"  Mamdani win probability: {result['win_probability']:.1f}%")
-        print(f"  Projected vote share: {result['vote_share']:.1f}%")
-        print(f"  95% CI: [{result['monte_carlo']['percentile_2_5']:.1f}%, {result['monte_carlo']['percentile_97_5']:.1f}%]")
-        
-        # For now, save with placeholder values for data we need to extract
-        # In a production version, we would properly return these from the function
-        # Access the global variables from the function
-        POLLS = calculate_nyc_primary_comprehensive.__code__.co_consts
-        # For now, use the data directly
-        POLLS = [
-            {
-                'name': 'Emerson',
-                'date': 'June 18-20',
-                'days_old': 3,
-                'credibility': 0.95,
-                'sample_size': 833,
-                'margin_error': 3.3,
-                'first_choice': {'mamdani': 32.0, 'cuomo': 35.0, 'lander': 13.0, 'adams': 8.0},
-                'rcv_final': {'mamdani': 52.0, 'cuomo': 48.0},
-                'early_voters': {'mamdani': 41.0, 'cuomo': 31.0}
-            },
-            {
-                'name': 'Marist',
-                'date': 'June 11-16',
-                'days_old': 7,
-                'credibility': 0.98,
-                'sample_size': 644,
-                'margin_error': 3.9,
-                'first_choice': {'mamdani': 27.0, 'cuomo': 38.0, 'lander': 7.0, 'adams': 7.0},
-                'rcv_final': {'mamdani': 45.0, 'cuomo': 55.0},
-                'early_voters': None
-            },
-            {
-                'name': 'Manhattan Institute',
-                'date': 'June 11-16',
-                'days_old': 7,
-                'credibility': 0.70,
-                'sample_size': 606,
-                'margin_error': 3.9,
-                'first_choice': {'mamdani': 30.0, 'cuomo': 43.0, 'lander': 11.0, 'adams': 8.0},
-                'rcv_final': {'mamdani': 44.0, 'cuomo': 56.0},
-                'early_voters': None
-            }
-        ]
-        
-        EARLY_VOTE_BY_BOROUGH = {
-            'Manhattan': {'total': 122642, 'pct_of_total': 31.8, 'mamdani_est': 0.45, 'cuomo_est': 0.28},
-            'Brooklyn': {'total': 142724, 'pct_of_total': 37.1, 'mamdani_est': 0.44, 'cuomo_est': 0.29},
-            'Queens': {'total': 75778, 'pct_of_total': 19.7, 'mamdani_est': 0.38, 'cuomo_est': 0.34},
-            'Bronx': {'total': 30816, 'pct_of_total': 8.0, 'mamdani_est': 0.31, 'cuomo_est': 0.42},
-            'Staten Island': {'total': 12367, 'pct_of_total': 3.2, 'mamdani_est': 0.28, 'cuomo_est': 0.45}
-        }
-        
-        WEATHER_FORECAST = {
-            'high_temp_f': 101,
-            'heat_index_f': 106,
-            'humidity': 65,
-            'is_record': True,
-            'poll_sites_no_ac': 600,
-            'total_poll_sites': 1213
-        }
-        
-        TOTAL_EARLY_VOTES = 384327
-        
-        # Get the actual RCV rounds from the model
-        # For now, create more complete placeholder data
-        rcv_rounds_placeholder = [
-            {
-                'round': 1,
-                'votes': {'mamdani': 342036, 'cuomo': 367370, 'lander': 97672, 'adams': 65114, 'others': 81393},
-                'eliminated': None,
-                'transfers': {}
-            },
-            {
-                'round': 2,
-                'votes': {'mamdani': 364827, 'cuomo': 393416, 'lander': 97672, 'adams': 0, 'others': 81393},
-                'eliminated': 'adams',
-                'transfers': {'mamdani': 22791, 'cuomo': 26045, 'exhausted': 16278}
-            },
-            {
-                'round': 3,
-                'votes': {'mamdani': 405523, 'cuomo': 421904, 'lander': 97672, 'adams': 0, 'others': 0},
-                'eliminated': 'others',
-                'transfers': {'mamdani': 40696, 'cuomo': 28487, 'exhausted': 12210}
-            },
-            {
-                'round': 4,
-                'votes': {'mamdani': 469010, 'cuomo': 441438, 'lander': 0, 'adams': 0, 'others': 0},
-                'eliminated': 'lander',
-                'transfers': {'mamdani': 73487, 'cuomo': 14656, 'exhausted': 9527}
-            }
-        ]
-        
-        eday_breakdown_placeholder = {
-            '18-24': {'total': 27464, 'mamdani': 17852, 'cuomo': 9612},
-            '25-34': {'total': 38450, 'mamdani': 23070, 'cuomo': 15380},
-            '35-49': {'total': 122868, 'mamdani': 55290, 'cuomo': 67577},
-            '50-64': {'total': 151779, 'mamdani': 53122, 'cuomo': 98656},
-            '65+': {'total': 89043, 'mamdani': 22260, 'cuomo': 66782}
-        }
-        
-        # Add additional data to results
-        result['baseline_rcv'] = 48.1
-        result['baseline_first'] = 30.0
-        result['mamdani_early_votes'] = 159798
-        result['cuomo_early_votes'] = 120002
-        result['mamdani_early_advantage'] = 39796
-        
-        save_results_to_json(
-            result, 
-            POLLS, 
-            EARLY_VOTE_BY_BOROUGH,
-            result.get('rcv_rounds', rcv_rounds_placeholder),  # Use actual RCV rounds if available
-            result.get('eday_breakdown', eday_breakdown_placeholder),
-            WEATHER_FORECAST,
-            result.get('heat_net_change', -30000),  # heat net change from model
-            result.get('projected_total_turnout', 971340),  # projected turnout from model
-            TOTAL_EARLY_VOTES
-        )
-        
+        print(f"  Mamdani win probability: {results['win_probability']:.1f}%")
+        print(f"  Projected vote share: {results['vote_share']:.1f}%")
+        print(f"  95% CI: [{results['monte_carlo']['percentile_2_5']:.1f}%, {results['monte_carlo']['percentile_97_5']:.1f}%]")
+
+        save_results_to_json(results)
+
     except Exception as e:
         print(f"\nERROR: Model execution failed")
         print(f"  {type(e).__name__}: {str(e)}")

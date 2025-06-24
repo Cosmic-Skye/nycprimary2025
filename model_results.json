@@ -1,15 +1,15 @@
 {
-  "timestamp": "2025-06-24T03:49:37.455110",
+  "timestamp": "2025-06-24T19:32:03.913140",
   "summary": {
-    "mamdani_win_probability": 55.5,
-    "cuomo_win_probability": 44.5,
+    "mamdani_win_probability": 55.6,
+    "cuomo_win_probability": 44.4,
     "mamdani_vote_share": 50.5,
     "cuomo_vote_share": 49.5,
     "margin_percentage": 1.0,
-    "margin_votes": 9405,
+    "margin_votes": 10501,
     "confidence_interval": {
-      "lower": 43.0,
-      "upper": 56.7
+      "lower": 42.7,
+      "upper": 56.4
     }
   },
   "polling": {
@@ -47,9 +47,9 @@
   },
   "early_voting": {
     "total_votes": 384327,
-    "mamdani_votes": 159798,
-    "cuomo_votes": 120002,
-    "mamdani_advantage": 39796,
+    "mamdani_votes": 159800,
+    "cuomo_votes": 120003,
+    "mamdani_advantage": 39797,
     "youth_surge_multiplier": 2.9,
     "by_borough": [
       {
@@ -90,60 +90,60 @@
     ]
   },
   "weather_impact": {
-    "temperature": 101,
+    "temperature": 102,
     "heat_index": 106,
     "sites_without_ac": 600,
     "total_sites": 1213,
-    "net_voter_change": -48175,
+    "net_voter_change": -6608,
     "impact_by_age": {
-      "18-24": 2,
-      "25-34": 3,
-      "35-49": 5,
-      "50-64": 8,
-      "65+": 12
+      "18-24": 2.0,
+      "25-34": 3.0,
+      "35-49": 5.0,
+      "50-64": 8.0,
+      "65+": 12.0
     }
   },
   "turnout": {
-    "projected_total": 971340,
+    "projected_total": 1063004,
     "early_votes": 384327,
-    "election_day": 587013,
+    "election_day": 678677,
     "historical_2021": 943996,
     "growth_factor": 1.08
   },
   "election_day_breakdown": [
     {
       "age_group": "18-24",
-      "total_votes": 29350,
-      "mamdani_votes": 19077,
-      "cuomo_votes": 10272,
+      "total_votes": 31429,
+      "mamdani_votes": 20428,
+      "cuomo_votes": 11000,
       "mamdani_percentage": 65.0
     },
     {
       "age_group": "25-34",
-      "total_votes": 41090,
-      "mamdani_votes": 24654,
-      "cuomo_votes": 16436,
+      "total_votes": 44000,
+      "mamdani_votes": 26400,
+      "cuomo_votes": 17600,
       "mamdani_percentage": 60.0
     },
     {
       "age_group": "35-49",
-      "total_votes": 146753,
-      "mamdani_votes": 66039,
-      "cuomo_votes": 80714,
+      "total_votes": 157145,
+      "mamdani_votes": 70715,
+      "cuomo_votes": 86429,
       "mamdani_percentage": 45.0
     },
     {
       "age_group": "50-64",
-      "total_votes": 205454,
-      "mamdani_votes": 71909,
-      "cuomo_votes": 133545,
+      "total_votes": 220003,
+      "mamdani_votes": 77001,
+      "cuomo_votes": 143001,
       "mamdani_percentage": 35.0
     },
     {
       "age_group": "65+",
-      "total_votes": 164363,
-      "mamdani_votes": 41090,
-      "cuomo_votes": 123272,
+      "total_votes": 176002,
+      "mamdani_votes": 44000,
+      "cuomo_votes": 132001,
       "mamdani_percentage": 25.0
     }
   ],
@@ -154,37 +154,37 @@
         "candidates": [
           {
             "name": "Cuomo",
-            "votes": 359827,
+            "votes": 393783,
             "percentage": 37.0
           },
           {
             "name": "Mamdani",
-            "votes": 319207,
+            "votes": 349330,
             "percentage": 32.9
           },
           {
             "name": "Lander",
-            "votes": 109736,
+            "votes": 120092,
             "percentage": 11.3
           },
           {
             "name": "Others",
-            "votes": 105050,
+            "votes": 114963,
             "percentage": 10.8
           },
           {
             "name": "Adams",
-            "votes": 77520,
+            "votes": 84836,
             "percentage": 8.0
           }
         ],
         "eliminated": "adams",
         "transfers": {
-          "mamdani": 21765,
-          "cuomo": 10516,
-          "lander": 21067,
-          "others": 12051,
-          "exhausted": 12076
+          "mamdani": 23851,
+          "cuomo": 11526,
+          "lander": 23036,
+          "others": 13151,
+          "exhausted": 13216
         }
       },
       {
@@ -192,32 +192,32 @@
         "candidates": [
           {
             "name": "Cuomo",
-            "votes": 370341,
+            "votes": 405307,
             "percentage": 38.6
           },
           {
             "name": "Mamdani",
-            "votes": 340972,
-            "percentage": 35.5
+            "votes": 373181,
+            "percentage": 35.6
           },
           {
             "name": "Lander",
-            "votes": 130803,
+            "votes": 143128,
             "percentage": 13.6
           },
           {
             "name": "Others",
-            "votes": 117101,
+            "votes": 128114,
             "percentage": 12.2
           }
         ],
         "eliminated": "others",
         "transfers": {
-          "mamdani": 38718,
-          "cuomo": 33254,
-          "lander": 16549,
-          "exhausted": 26656,
-          "others": 27756
+          "mamdani": 42383,
+          "cuomo": 36349,
+          "lander": 18048,
+          "exhausted": 29157,
+          "others": 30999
         }
       },
       {
@@ -225,33 +225,33 @@
         "candidates": [
           {
             "name": "Cuomo",
-            "votes": 403509,
+            "votes": 441597,
             "percentage": 43.4
           },
           {
             "name": "Mamdani",
-            "votes": 379693,
+            "votes": 415524,
             "percentage": 40.8
           },
           {
             "name": "Lander",
-            "votes": 147344,
+            "votes": 161199,
             "percentage": 15.8
           }
         ],
         "eliminated": "lander",
         "transfers": {
-          "mamdani": 65725,
-          "cuomo": 33816,
-          "exhausted": 47247
+          "mamdani": 71955,
+          "cuomo": 37035,
+          "exhausted": 51652
         }
       }
     ],
     "final_result": {
       "mamdani_percentage": 50.5,
       "cuomo_percentage": 49.5,
-      "mamdani_votes": 445357,
-      "cuomo_votes": 437133
+      "mamdani_votes": 487496,
+      "cuomo_votes": 478404
     }
   },
   "uncertainty": {
@@ -259,21 +259,21 @@
       "iterations": 100000,
       "mean": 50.5,
       "std_dev": 4.7,
-      "percentile_5": 42.7,
-      "percentile_95": 58.3,
-      "percentile_2_5": 41.2,
-      "percentile_97_5": 59.8
+      "percentile_5": 42.8,
+      "percentile_95": 58.2,
+      "percentile_2_5": 41.3,
+      "percentile_97_5": 59.6
     },
     "sensitivity": [
       {
         "factor": "Early vote split",
         "change_percentage": 5.0,
-        "impact_on_vote_share": 2.0
+        "impact_on_vote_share": 1.8
       },
       {
         "factor": "Heat suppression",
         "change_percentage": 10.0,
-        "impact_on_vote_share": 0.5
+        "impact_on_vote_share": 0.1
       },
       {
         "factor": "RCV transfers",

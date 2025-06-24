@@ -288,6 +288,10 @@
                     <h3 class="text-2xl font-bold mb-4">Projected Result</h3>
                     <p class="text-xl font-bold">Final Vote Share: <span class="text-blue-600" id="mamdani-vote-share">--</span> vs <span class="text-red-600" id="cuomo-vote-share">--</span></p>
                     <p class="text-md text-gray-600 mt-2">Projected Victory Margin: <span class="font-bold text-gray-800" id="victory-margin">--</span></p>
+                    <div class="mt-3 text-sm text-gray-600">
+                        <p class="font-semibold mb-1">Total votes counted as of 6pm: <span id="total-votes-6pm">--</span></p>
+                        <div id="votes-by-borough-6pm" class="text-xs grid grid-cols-2 gap-1 mt-2"></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -313,7 +317,7 @@
                         </div>
                         <div class="text-center bg-white p-4 rounded-lg mt-3 flex-grow flex flex-col justify-center">
                             <p class="text-5xl font-extrabold text-blue-600" id="youth-surge">--</p>
-                            <p class="font-semibold text-gray-700">Youth Vote vs. Historical Rate</p>
+                            <p class="font-semibold text-gray-700">Early Vote Youth vs. Historical Rate</p>
                             <p class="text-sm text-gray-500 mt-2">Comparison to previous primary elections</p>
                         </div>
                     </div>
@@ -327,12 +331,12 @@
                         <p class="text-red-700 mb-4">Extreme heat is projected to impact turnout differentially by age group, with older voters historically showing higher sensitivity to weather conditions.</p>
                         <div class="text-center bg-white p-4 rounded-lg flex-grow flex flex-col justify-center">
                             <p class="text-5xl font-extrabold text-red-600" id="temperature">--</p>
-                            <p class="font-semibold text-gray-700">Forecasted High Temperature</p>
+                            <p class="font-semibold text-gray-700">Actual High Temperature</p>
                             <p class="text-sm text-gray-500 mt-2">with <span id="no-ac-percentage">--</span> of poll sites lacking AC</p>
                         </div>
                         <div class="text-center bg-white p-4 rounded-lg mt-3 flex-grow flex flex-col justify-center">
                             <p class="text-5xl font-extrabold text-red-600" id="senior-suppression">--</p>
-                            <p class="font-semibold text-gray-700">Turnout Reduction for 65+</p>
+                            <p class="font-semibold text-gray-700">Estimated Turnout Reduction for 65+</p>
                             <p class="text-sm text-gray-500 mt-2">vs. only <span id="youth-suppression">--</span> for voters under 35</p>
                         </div>
                     </div>
@@ -346,7 +350,7 @@
                         <p class="text-blue-700 mb-4">Polling trends in the final weeks provided a significant tailwind for the Mamdani campaign, helping to close the gap with Cuomo.</p>
                         <div class="text-center bg-white p-4 rounded-lg flex-grow flex flex-col justify-center">
                             <p class="text-5xl font-extrabold text-blue-600">+1.5%</p>
-                            <p class="font-semibold text-gray-700">Momentum Shift</p>
+                            <p class="font-semibold text-gray-700">Predicted Momentum Shift</p>
                             <p class="text-sm text-gray-500 mt-2">Voters shifting from Cuomo to Mamdani based on polling trends.</p>
                         </div>
                     </div>
@@ -360,7 +364,7 @@
                         <p class="text-yellow-700 mb-4">Ranked-Choice Voting dynamics show varying transfer patterns between candidates based on endorsements and voter preferences.</p>
                         <div class="text-center bg-white p-4 rounded-lg flex-grow flex flex-col justify-center">
                             <p class="text-5xl font-extrabold text-yellow-600">46%</p>
-                            <p class="font-semibold text-gray-700">Lander-to-Mamdani Transfers</p>
+                            <p class="font-semibold text-gray-700">Estimated Lander-to-Mamdani Transfers</p>
                             <p class="text-sm text-gray-500 mt-2">Transfer rates based on historical patterns and current endorsements.</p>
                         </div>
                     </div>
@@ -645,6 +649,32 @@
         
         // Update gauge needle
         updateGaugeNeedle(modelData.summary.mamdani_win_probability);
+        
+        // Calculate and display 6pm vote counts
+        // We need to use the 6pm data from the model (486,231 E-day votes at 6pm)
+        // Plus early votes and mail-in votes
+        const edayVotes6pm = 486231; // From ELECTION_DAY_6PM_DATA in model.py
+        const earlyVotes = modelData.early_voting.total_votes;
+        const mailInVotes = 50097; // From MAIL_IN_VOTES in model.py
+        const totalVotes6pm = edayVotes6pm + earlyVotes + mailInVotes;
+        
+        document.getElementById('total-votes-6pm').textContent = formatNumber(totalVotes6pm);
+        
+        // Display by borough (using early vote data as reference)
+        const boroughContainer = document.getElementById('votes-by-borough-6pm');
+        const boroughVotes6pm = [
+            { name: 'Manhattan', votes: 155297 + 122642 }, // E-day 6pm + early
+            { name: 'Brooklyn', votes: 162669 + 142724 },
+            { name: 'Queens', votes: 93576 + 75778 },
+            { name: 'Bronx', votes: 58211 + 30816 },
+            { name: 'Staten Island', votes: 16478 + 12367 }
+        ];
+        
+        let boroughHtml = '';
+        boroughVotes6pm.forEach(borough => {
+            boroughHtml += `<div>${borough.name}: ${formatNumber(borough.votes)}</div>`;
+        });
+        boroughContainer.innerHTML = boroughHtml;
     }
     
     // Generate RCV simulation HTML
