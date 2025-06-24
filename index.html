@@ -756,7 +756,7 @@
                         <div class="w-full bg-gray-200 rounded-full h-4 my-2">
                           <div class="bg-[#3b82f6] h-4 rounded-full" style="width: ${modelData.rcv_simulation.final_result.mamdani_percentage}%"></div>
                         </div>
-                        <p class="font-semibold text-gray-800">${formatNumber(lastRound.candidates.find(c => c.name === 'Mamdani')?.votes || 0)} Votes</p>
+                        <p class="font-semibold text-gray-800">${formatNumber(modelData.rcv_simulation.final_result.mamdani_votes || 0)} Votes</p>
                     </div>
                     <div class="text-center">
                         <p class="font-bold text-2xl">Andrew Cuomo</p>
@@ -764,7 +764,7 @@
                         <div class="w-full bg-gray-200 rounded-full h-4 my-2">
                           <div class="bg-[#F94144] h-4 rounded-full" style="width: ${modelData.rcv_simulation.final_result.cuomo_percentage}%"></div>
                         </div>
-                        <p class="font-semibold text-gray-800">${formatNumber(lastRound.candidates.find(c => c.name === 'Cuomo')?.votes || 0)} Votes</p>
+                        <p class="font-semibold text-gray-800">${formatNumber(modelData.rcv_simulation.final_result.cuomo_votes || 0)} Votes</p>
                     </div>
                 </div>
             </div>`;

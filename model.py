@@ -1036,7 +1036,9 @@ def save_results_to_json(results: Dict, polls: List[Dict], early_vote_data: Dict
             'rounds': formatted_rounds,
             'final_result': {
                 'mamdani_percentage': round(results['vote_share'], 1),
-                'cuomo_percentage': round(100 - results['vote_share'], 1)
+                'cuomo_percentage': round(100 - results['vote_share'], 1),
+                'mamdani_votes': int(projected_turnout * 0.90 * results['vote_share'] / 100),
+                'cuomo_votes': int(projected_turnout * 0.90 * (100 - results['vote_share']) / 100)
             }
         },
         'uncertainty': {
