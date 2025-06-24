@@ -14,8 +14,6 @@ This project provides real-time analysis and predictions for the NYC Democratic 
 
 - Interactive win probability visualization
 - Monte Carlo simulation results
-- Analysis of key factors affecting the race
-- Responsive design for mobile and desktop
 
 ## Technologies
 
