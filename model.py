@@ -294,11 +294,6 @@ RCV_TRANSFERS = {
         'mamdani': {'mean': 0.40, 'std': 0.10},    # Estimated from other patterns
         'cuomo': {'mean': 0.35, 'std': 0.10},
         'exhausted': {'mean': 0.25, 'std': 0.05}
-    },
-    'other': {
-        'mamdani': {'mean': 0.35, 'std': 0.15},    # High uncertainty for other
-        'cuomo': {'mean': 0.35, 'std': 0.15},      # Split evenly with high variance
-        'exhausted': {'mean': 0.30, 'std': 0.10}   # Higher exhaustion for other
     }
 }
 
@@ -436,17 +431,40 @@ def calculate_nyc_primary_comprehensive():
     lander_weighted_first = 0.109  # 10.9% weighted average
     adams_weighted_first = 0.077  # 7.7% weighted average
     
-    # Calculate others to ensure sum = 1.0
+    # Calculate others and undecided
     others_weighted_first = 1.0 - (mamdani_weighted_first + cuomo_weighted_first + 
                                   lander_weighted_first + adams_weighted_first)
     
+    # From the cross-tabs: 4% are undecided, need to redistribute
+    undecided_rate = 0.04  # 4% undecided from poll
+    actual_others = max(0.05, others_weighted_first - undecided_rate)  # Other actual candidates
+    
+    # Redistribute undecided based on likelihood patterns from cross-tabs:
+    # Higher propensity among: Black voters (5.6%), 30-39 (6.9%), some college (9.3%)
+    # Lower propensity among: White (2.8%), college grads (1.7%)
+    # Assume undecided break similarly to decided voters with slight lean to frontrunners
+    
+    # Redistribute the 4% undecided proportionally with a slight boost to top 2
+    redistribution_weights = {
+        'mamdani': mamdani_weighted_first * 1.1,  # 10% boost for frontrunner effect
+        'cuomo': cuomo_weighted_first * 1.1,      # 10% boost for frontrunner effect  
+        'lander': lander_weighted_first * 0.9,     # 10% penalty for lower name recognition
+        'adams': adams_weighted_first * 0.9,       # 10% penalty for lower name recognition
+        'others': actual_others * 0.8              # 20% penalty for lowest name recognition
+    }
+    
+    # Normalize redistribution weights
+    total_weight = sum(redistribution_weights.values())
+    for candidate in redistribution_weights:
+        redistribution_weights[candidate] /= total_weight
+    
+    # Apply redistribution of undecided voters
     first_choice_pcts = {
-        'mamdani': mamdani_weighted_first,
-        'cuomo': cuomo_weighted_first,
-        'lander': lander_weighted_first,
-        'adams': adams_weighted_first,
-        'others': max(0.04, others_weighted_first * 0.7),  # 70% of remainder
-        'other': max(0.02, others_weighted_first * 0.3)  # 30% of remainder
+        'mamdani': mamdani_weighted_first + undecided_rate * redistribution_weights['mamdani'],
+        'cuomo': cuomo_weighted_first + undecided_rate * redistribution_weights['cuomo'],
+        'lander': lander_weighted_first + undecided_rate * redistribution_weights['lander'],
+        'adams': adams_weighted_first + undecided_rate * redistribution_weights['adams'],
+        'others': actual_others + undecided_rate * redistribution_weights['others']
     }
     
     # Normalize to ensure exact sum of 1.0
@@ -485,8 +503,7 @@ def calculate_nyc_primary_comprehensive():
             'cuomo': {'college': 0.39, 'white_asian': 0.30},
             'lander': {'college': 0.75, 'white_asian': 0.80},  # Progressive bloc
             'adams': {'college': 0.35, 'white_asian': 0.25},   # Moderate bloc
-            'others': {'college': 0.50, 'white_asian': 0.50},  # Mixed
-            'other': {'college': 0.50, 'white_asian': 0.50}  # Assume average demographics
+            'others': {'college': 0.50, 'white_asian': 0.50}   # Mixed demographics
         }
         
         # Round 1 - Initial count
