@@ -287,13 +287,29 @@ EARLY_VOTE_BY_BOROUGH = {
 }
 
 # Real-time Election Day Turnout Data (as of 6pm - 3 hours before polls close)
-# Note: These are E-day only votes (cumulative total minus early/mail votes)
+# Calculate E-day 6pm from actual cumulative data
+# ACTUAL 6PM CUMULATIVE DATA (Early + Mail + E-day through 6pm)
+ACTUAL_6PM_CUMULATIVE = {
+    'Brooklyn': 313965,
+    'Manhattan': 267799,
+    'Queens': 181336,
+    'Bronx': 89027,
+    'Staten Island': 28845
+}
+
+# Actual vote breakdown as of 6pm
+ACTUAL_EARLY_TOTAL = 384338
+ACTUAL_EDAY_6PM = 446537
+ACTUAL_MAIL_TOTAL = 50097
+ACTUAL_6PM_TOTAL = 880972
+
+
 ELECTION_DAY_6PM_DATA = {
-    'Manhattan': {'votes_6pm': 155297, 'turnout_2021': 274000, 'pct_of_2021': 0.57},
-    'Brooklyn': {'votes_6pm': 162669, 'turnout_2021': 337000, 'pct_of_2021': 0.48},
-    'Queens': {'votes_6pm': 93576, 'turnout_2021': 234000, 'pct_of_2021': 0.40},
-    'Bronx': {'votes_6pm': 58211, 'turnout_2021': 117000, 'pct_of_2021': 0.50},
-    'Staten Island': {'votes_6pm': 16478, 'turnout_2021': 51000, 'pct_of_2021': 0.32}
+    'Manhattan': {'votes_6pm': ACTUAL_6PM_CUMULATIVE['Manhattan'] - EARLY_VOTE_BY_BOROUGH['Manhattan']['total'] - int(ACTUAL_MAIL_TOTAL * 0.304), 'turnout_2021': 274000, 'pct_of_2021': 0.57},
+    'Brooklyn': {'votes_6pm': ACTUAL_6PM_CUMULATIVE['Brooklyn'] - EARLY_VOTE_BY_BOROUGH['Brooklyn']['total'] - int(ACTUAL_MAIL_TOTAL * 0.356), 'turnout_2021': 337000, 'pct_of_2021': 0.48},
+    'Queens': {'votes_6pm': ACTUAL_6PM_CUMULATIVE['Queens'] - EARLY_VOTE_BY_BOROUGH['Queens']['total'] - int(ACTUAL_MAIL_TOTAL * 0.206), 'turnout_2021': 234000, 'pct_of_2021': 0.40},
+    'Bronx': {'votes_6pm': ACTUAL_6PM_CUMULATIVE['Bronx'] - EARLY_VOTE_BY_BOROUGH['Bronx']['total'] - int(ACTUAL_MAIL_TOTAL * 0.101), 'turnout_2021': 117000, 'pct_of_2021': 0.50},
+    'Staten Island': {'votes_6pm': ACTUAL_6PM_CUMULATIVE['Staten Island'] - EARLY_VOTE_BY_BOROUGH['Staten Island']['total'] - int(ACTUAL_MAIL_TOTAL * 0.033), 'turnout_2021': 51000, 'pct_of_2021': 0.32}
 }
 
 # Mail-in votes by borough (from 6pm cumulative data)
@@ -301,6 +317,8 @@ MAIL_IN_VOTES = 50097
 
 # Total early votes (sum of borough totals)
 TOTAL_EARLY_VOTES = sum(data['total'] for data in EARLY_VOTE_BY_BOROUGH.values())
+
+
 
 # Demographic Breakdown (based on NYC voter file analysis)
 AGE_DEMOGRAPHICS = {
@@ -1291,6 +1309,19 @@ def save_results_to_json(results: Dict) -> None:
             }
             for age, data in results['eday_breakdown'].items()
         ],
+        'cumulative_6pm': {
+            'total': ACTUAL_6PM_TOTAL,
+            'by_borough': {
+                'Brooklyn': ACTUAL_6PM_CUMULATIVE['Brooklyn'],
+                'Manhattan': ACTUAL_6PM_CUMULATIVE['Manhattan'],
+                'Queens': ACTUAL_6PM_CUMULATIVE['Queens'],
+                'Bronx': ACTUAL_6PM_CUMULATIVE['Bronx'],
+                'Staten Island': ACTUAL_6PM_CUMULATIVE['Staten Island']
+            },
+            'early_total': ACTUAL_EARLY_TOTAL,
+            'eday_6pm': ACTUAL_EDAY_6PM,
+            'mail_total': ACTUAL_MAIL_TOTAL
+        },
         'rcv_simulation': {
             'rounds': formatted_rounds,
             'final_result': {
