@@ -114,41 +114,41 @@ def analyze_early_voting(early_vote_data: Dict, total_early_votes: int) -> Tuple
     
     return mamdani_votes, cuomo_votes, mamdani_votes - cuomo_votes
 
-def project_final_turnout_from_6pm(election_day_6pm_data: Dict, 
-                                  early_vote_data: Dict) -> Tuple[int, int, Dict]:
+def project_final_turnout_from_730pm(election_day_730pm_data: Dict, 
+                                    early_vote_data: Dict) -> Tuple[int, int, Dict]:
     """
-    Project final turnout based on 6pm election day data.
+    Project final turnout based on 7:30pm election day data.
     
-    Historical patterns show ~75-80% of E-day votes are cast by 6pm.
-    Final 3 hours (6-9pm) typically see 20-25% of E-day turnout.
+    Historical patterns show ~85-90% of E-day votes are cast by 7:30pm.
+    Final 1.5 hours (7:30-9pm) typically see 10-15% of E-day turnout.
     
     Returns:
         Tuple of (projected_eday_total, projected_total_turnout, borough_projections)
     """
-    # Calculate total votes cast by 6pm
-    total_6pm = sum(data['votes_6pm'] for data in election_day_6pm_data.values())
+    # Calculate total votes cast by 7:30pm
+    total_730pm = sum(data['votes_730pm'] for data in election_day_730pm_data.values())
     
     # Estimate completion rate by borough based on historical patterns
-    # More affluent/Manhattan voters tend to vote earlier; outer boroughs later
+    # By 7:30pm, most voting is complete - adjust rates upward
     completion_rates = {
-        'Manhattan': 0.80,      # 80% complete by 6pm
-        'Brooklyn': 0.78,       # 78% complete
-        'Queens': 0.75,         # 75% complete
-        'Bronx': 0.73,          # 73% complete
-        'Staten Island': 0.77   # 77% complete
+        'Manhattan': 0.90,      # 90% complete by 7:30pm
+        'Brooklyn': 0.88,       # 88% complete
+        'Queens': 0.85,         # 85% complete
+        'Bronx': 0.83,          # 83% complete
+        'Staten Island': 0.87   # 87% complete
     }
     
     # Project final E-day turnout by borough
     borough_projections = {}
     projected_eday_total = 0
     
-    for borough, data in election_day_6pm_data.items():
-        completion_rate = completion_rates.get(borough, 0.75)
-        projected_final = data['votes_6pm'] / completion_rate
+    for borough, data in election_day_730pm_data.items():
+        completion_rate = completion_rates.get(borough, 0.85)
+        projected_final = data['votes_730pm'] / completion_rate
         borough_projections[borough] = {
-            'votes_6pm': data['votes_6pm'],
+            'votes_730pm': data['votes_730pm'],
             'projected_final': int(projected_final),
-            'remaining_votes': int(projected_final - data['votes_6pm']),
+            'remaining_votes': int(projected_final - data['votes_730pm']),
             'completion_rate': completion_rate,
             'vs_2021': data['pct_of_2021']
         }
@@ -279,40 +279,41 @@ POLLS = [
 
 # Borough-Specific Early Vote Data (NYC BOE)
 EARLY_VOTE_BY_BOROUGH = {
-    'Manhattan': {'total': 122642, 'pct_of_total': 31.8, 'mamdani_est': 0.45, 'cuomo_est': 0.28},
-    'Brooklyn': {'total': 142724, 'pct_of_total': 37.1, 'mamdani_est': 0.44, 'cuomo_est': 0.29},
+    'Brooklyn': {'total': 142735, 'pct_of_total': 37.1, 'mamdani_est': 0.44, 'cuomo_est': 0.29},
+    'Manhattan': {'total': 122642, 'pct_of_total': 31.9, 'mamdani_est': 0.45, 'cuomo_est': 0.28},
     'Queens': {'total': 75778, 'pct_of_total': 19.7, 'mamdani_est': 0.38, 'cuomo_est': 0.34},
     'Bronx': {'total': 30816, 'pct_of_total': 8.0, 'mamdani_est': 0.31, 'cuomo_est': 0.42},
     'Staten Island': {'total': 12367, 'pct_of_total': 3.2, 'mamdani_est': 0.28, 'cuomo_est': 0.45}
 }
 
-# Real-time Election Day Turnout Data (as of 6pm - 3 hours before polls close)
-# Calculate E-day 6pm from actual cumulative data
-# ACTUAL 6PM CUMULATIVE DATA (Early + Mail + E-day through 6pm)
-ACTUAL_6PM_CUMULATIVE = {
-    'Brooklyn': 313965,
-    'Manhattan': 267799,
-    'Queens': 181336,
-    'Bronx': 89027,
-    'Staten Island': 28845
+# Real-time Election Day Turnout Data
+# ACTUAL 7:30PM CUMULATIVE DATA (Early + Mail + E-day through 7:30pm)
+ACTUAL_730PM_CUMULATIVE = {
+    'Brooklyn': 348290,
+    'Manhattan': 292854,
+    'Queens': 205479,
+    'Bronx': 101625,
+    'Staten Island': 32354
 }
 
-# Actual vote breakdown as of 6pm
+# Actual vote breakdown
 ACTUAL_EARLY_TOTAL = 384338
-ACTUAL_EDAY_6PM = 446537
+ACTUAL_EDAY_730PM = 546167  # Total E-day votes through 7:30pm
 ACTUAL_MAIL_TOTAL = 50097
-ACTUAL_6PM_TOTAL = 880972
+ACTUAL_730PM_TOTAL = 980602  # Total cumulative through 7:30pm
 
-
-ELECTION_DAY_6PM_DATA = {
-    'Manhattan': {'votes_6pm': ACTUAL_6PM_CUMULATIVE['Manhattan'] - EARLY_VOTE_BY_BOROUGH['Manhattan']['total'] - int(ACTUAL_MAIL_TOTAL * 0.304), 'turnout_2021': 274000, 'pct_of_2021': 0.57},
-    'Brooklyn': {'votes_6pm': ACTUAL_6PM_CUMULATIVE['Brooklyn'] - EARLY_VOTE_BY_BOROUGH['Brooklyn']['total'] - int(ACTUAL_MAIL_TOTAL * 0.356), 'turnout_2021': 337000, 'pct_of_2021': 0.48},
-    'Queens': {'votes_6pm': ACTUAL_6PM_CUMULATIVE['Queens'] - EARLY_VOTE_BY_BOROUGH['Queens']['total'] - int(ACTUAL_MAIL_TOTAL * 0.206), 'turnout_2021': 234000, 'pct_of_2021': 0.40},
-    'Bronx': {'votes_6pm': ACTUAL_6PM_CUMULATIVE['Bronx'] - EARLY_VOTE_BY_BOROUGH['Bronx']['total'] - int(ACTUAL_MAIL_TOTAL * 0.101), 'turnout_2021': 117000, 'pct_of_2021': 0.50},
-    'Staten Island': {'votes_6pm': ACTUAL_6PM_CUMULATIVE['Staten Island'] - EARLY_VOTE_BY_BOROUGH['Staten Island']['total'] - int(ACTUAL_MAIL_TOTAL * 0.033), 'turnout_2021': 51000, 'pct_of_2021': 0.32}
+# Actual Election Day votes by borough (6 AM to 7:30 PM)
+ACTUAL_EDAY_BY_BOROUGH = {
+    'Brooklyn': 193652,      # 35.5% of E-day
+    'Manhattan': 150242,     # 27.5% of E-day
+    'Queens': 118103,        # 21.6% of E-day
+    'Bronx': 66816,          # 12.2% of E-day
+    'Staten Island': 17354   # 3.2% of E-day
 }
 
-# Mail-in votes by borough (from 6pm cumulative data)
+
+
+# Mail-in votes
 MAIL_IN_VOTES = 50097
 
 # Total early votes (sum of borough totals)
@@ -341,11 +342,47 @@ WEATHER_FORECAST = {
 
 # Historical Turnout Data
 HISTORICAL_DATA = {
-    '2021_primary': 943996,
+    '2021_primary': 1013427,  # Updated with actual 2021 total
     '2017_primary': 650361,
     '2013_primary': 691801,
-    '2021_early_vote': 191239,
-    '2021_eday_vote': 752757
+    '2021_early_vote': 191197,  # Updated with actual 2021 early vote
+    '2021_eday_vote': 822230   # Calculated: 1,013,427 - 191,197
+}
+
+# 2021 Early Vote by Borough for comparison
+EARLY_VOTE_2021 = {
+    'Brooklyn': {'total': 65516, 'pct_of_total': 34.3},
+    'Manhattan': {'total': 60649, 'pct_of_total': 31.7},
+    'Queens': {'total': 35361, 'pct_of_total': 18.5},
+    'Bronx': {'total': 20590, 'pct_of_total': 10.8},
+    'Staten Island': {'total': 9081, 'pct_of_total': 4.7}
+}
+
+# 2021 Total Turnout by Borough
+TURNOUT_2021 = {
+    'Brooklyn': 336591,
+    'Manhattan': 274264,
+    'Queens': 233836,
+    'Bronx': 117445,
+    'Staten Island': 51291
+}
+
+# Calculate 2021 E-day turnout by subtracting early votes from total
+TURNOUT_2021_EDAY = {
+    'Manhattan': TURNOUT_2021['Manhattan'] - EARLY_VOTE_2021['Manhattan']['total'],  # 274,264 - 60,649 = 213,615
+    'Brooklyn': TURNOUT_2021['Brooklyn'] - EARLY_VOTE_2021['Brooklyn']['total'],     # 336,591 - 65,516 = 271,075
+    'Queens': TURNOUT_2021['Queens'] - EARLY_VOTE_2021['Queens']['total'],           # 233,836 - 35,361 = 198,475
+    'Bronx': TURNOUT_2021['Bronx'] - EARLY_VOTE_2021['Bronx']['total'],              # 117,445 - 20,590 = 96,855
+    'Staten Island': TURNOUT_2021['Staten Island'] - EARLY_VOTE_2021['Staten Island']['total']  # 51,291 - 9,081 = 42,210
+}
+
+# % towards 2021 raw turnout by borough (calculated from actual data)
+PCT_OF_2021_TURNOUT = {
+    'Manhattan': ACTUAL_730PM_CUMULATIVE['Manhattan'] / TURNOUT_2021['Manhattan'],      # 292,854 / 274,264
+    'Brooklyn': ACTUAL_730PM_CUMULATIVE['Brooklyn'] / TURNOUT_2021['Brooklyn'],         # 348,290 / 336,591
+    'Queens': ACTUAL_730PM_CUMULATIVE['Queens'] / TURNOUT_2021['Queens'],               # 205,479 / 233,836
+    'Bronx': ACTUAL_730PM_CUMULATIVE['Bronx'] / TURNOUT_2021['Bronx'],                  # 101,625 / 117,445
+    'Staten Island': ACTUAL_730PM_CUMULATIVE['Staten Island'] / TURNOUT_2021['Staten Island']  # 32,354 / 51,291
 }
 
 # Cross-Endorsement Impact (based on historical RCV transfer patterns)
@@ -391,6 +428,35 @@ BALLOT_EXHAUSTION_RATES = {
     'staten_island': 0.100         # 10.0% rate
 }
 
+# Use actual E-day votes at 7:30pm for each borough
+ELECTION_DAY_730PM_DATA = {
+    'Manhattan': {
+        'votes_730pm': ACTUAL_EDAY_BY_BOROUGH['Manhattan'],
+        'turnout_2021': TURNOUT_2021_EDAY['Manhattan'],
+        'pct_of_2021': ACTUAL_EDAY_BY_BOROUGH['Manhattan'] / TURNOUT_2021_EDAY['Manhattan']
+    },
+    'Brooklyn': {
+        'votes_730pm': ACTUAL_EDAY_BY_BOROUGH['Brooklyn'],
+        'turnout_2021': TURNOUT_2021_EDAY['Brooklyn'],
+        'pct_of_2021': ACTUAL_EDAY_BY_BOROUGH['Brooklyn'] / TURNOUT_2021_EDAY['Brooklyn']
+    },
+    'Queens': {
+        'votes_730pm': ACTUAL_EDAY_BY_BOROUGH['Queens'],
+        'turnout_2021': TURNOUT_2021_EDAY['Queens'],
+        'pct_of_2021': ACTUAL_EDAY_BY_BOROUGH['Queens'] / TURNOUT_2021_EDAY['Queens']
+    },
+    'Bronx': {
+        'votes_730pm': ACTUAL_EDAY_BY_BOROUGH['Bronx'],
+        'turnout_2021': TURNOUT_2021_EDAY['Bronx'],
+        'pct_of_2021': ACTUAL_EDAY_BY_BOROUGH['Bronx'] / TURNOUT_2021_EDAY['Bronx']
+    },
+    'Staten Island': {
+        'votes_730pm': ACTUAL_EDAY_BY_BOROUGH['Staten Island'],
+        'turnout_2021': TURNOUT_2021_EDAY['Staten Island'],
+        'pct_of_2021': ACTUAL_EDAY_BY_BOROUGH['Staten Island'] / TURNOUT_2021_EDAY['Staten Island']
+    }
+}
+
 def calculate_nyc_primary_comprehensive():
     """
     Comprehensive model for NYC Democratic Primary 2025.
@@ -428,21 +494,21 @@ def calculate_nyc_primary_comprehensive():
     
     # ========== STAGE 3: ELECTION DAY TURNOUT MODEL ==========
     
-    # NEW: Use 6pm real-time data to project final turnout
-    projected_eday_turnout_6pm, projected_total_turnout_6pm, borough_projections = \
-        project_final_turnout_from_6pm(ELECTION_DAY_6PM_DATA, EARLY_VOTE_BY_BOROUGH)
+    # NEW: Use 7:30pm real-time data to project final turnout
+    projected_eday_turnout_730pm, projected_total_turnout_730pm, borough_projections = \
+        project_final_turnout_from_730pm(ELECTION_DAY_730PM_DATA, EARLY_VOTE_BY_BOROUGH)
     
     # Compare with original projection
     base_turnout_projection = HISTORICAL_DATA['2021_primary'] * BASE_TURNOUT_GROWTH
     base_eday_turnout = base_turnout_projection - TOTAL_EARLY_VOTES
     
-    # The 6pm data already reflects heat impact, so we use it directly
+    # The 7:30pm data already reflects heat impact, so we use it directly
     # But we calculate what the heat impact appears to be for reporting
-    actual_vs_expected = projected_eday_turnout_6pm - base_eday_turnout
+    actual_vs_expected = projected_eday_turnout_730pm - base_eday_turnout
     
-    # Use the 6pm-based projection as our primary estimate
-    projected_eday_turnout = projected_eday_turnout_6pm
-    projected_total_turnout = projected_total_turnout_6pm
+    # Use the 7:30pm-based projection as our primary estimate
+    projected_eday_turnout = projected_eday_turnout_730pm
+    projected_total_turnout = projected_total_turnout_730pm
     
     # For reporting purposes, estimate heat impact components
     # Since we're seeing lower turnout, the friction effects are dominating
@@ -949,6 +1015,17 @@ def calculate_nyc_primary_comprehensive():
     print("=" * 80)
     print(f"\nModel Run Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
+    print("\n🚨 NYC CUMULATIVE VOTES (Advance + Mail + 7:30pm E-day)")
+    print(f"  Brooklyn:       {ACTUAL_730PM_CUMULATIVE['Brooklyn']:>8,} votes ({ACTUAL_730PM_CUMULATIVE['Brooklyn']/ACTUAL_730PM_TOTAL*100:>4.1f}%)")
+    print(f"  Manhattan:      {ACTUAL_730PM_CUMULATIVE['Manhattan']:>8,} votes ({ACTUAL_730PM_CUMULATIVE['Manhattan']/ACTUAL_730PM_TOTAL*100:>4.1f}%)")
+    print(f"  Queens:         {ACTUAL_730PM_CUMULATIVE['Queens']:>8,} votes ({ACTUAL_730PM_CUMULATIVE['Queens']/ACTUAL_730PM_TOTAL*100:>4.1f}%)")
+    print(f"  The Bronx:      {ACTUAL_730PM_CUMULATIVE['Bronx']:>8,} votes ({ACTUAL_730PM_CUMULATIVE['Bronx']/ACTUAL_730PM_TOTAL*100:>4.1f}%)")
+    print(f"  Staten Island:  {ACTUAL_730PM_CUMULATIVE['Staten Island']:>8,} votes ({ACTUAL_730PM_CUMULATIVE['Staten Island']/ACTUAL_730PM_TOTAL*100:>4.1f}%)")
+    print(f"\n  TOTAL:          {ACTUAL_730PM_TOTAL:>8,} votes")
+    print(f"    Early:        {ACTUAL_EARLY_TOTAL:>8,}")
+    print(f"    E-day:        {ACTUAL_EDAY_730PM:>8,}")
+    print(f"    Mail:         {ACTUAL_MAIL_TOTAL:>8,}")
+    
     print("\n📊 POLLING ANALYSIS")
     print(f"  Weighted RCV Baseline: Mamdani {baseline_rcv_probability:.1f}%")
     print(f"  Weighted First Choice: Mamdani {baseline_first_choice:.1f}%")
@@ -960,15 +1037,28 @@ def calculate_nyc_primary_comprehensive():
     print(f"  Mamdani Net Advantage: +{int(mamdani_early_advantage):,} votes")
     print(f"  Youth Vote Surge: {youth_overperformance:.1f}x historical rate")
     
-    print("\n📊 REAL-TIME ELECTION DAY DATA (6PM UPDATE)")
-    print("  Borough         6pm Count   vs 2021   Projected Final")
+    print("\n📊 REAL-TIME ELECTION DAY DATA (7:30PM UPDATE)")
+    
+    # First show actual E-day numbers
+    print("\n  Election Day Votes (6 AM - 7:30 PM):")
+    print("  Borough         E-day Votes   % of E-day")
+    print("  " + "-" * 45)
+    for borough, votes in sorted(ACTUAL_EDAY_BY_BOROUGH.items()):
+        pct = votes / ACTUAL_EDAY_730PM * 100
+        print(f"  {borough:<13} {votes:>9,}     {pct:>5.1f}%")
+    print("  " + "-" * 45)
+    print(f"  Total         {ACTUAL_EDAY_730PM:>9,}")
+    
+    # Then show projections
+    print("\n  Projected Final E-day Turnout:")
+    print("  Borough         7:30pm Count   vs 2021   Projected Final")
     print("  " + "-" * 55)
-    total_6pm = sum(data['votes_6pm'] for data in ELECTION_DAY_6PM_DATA.values())
+    total_730pm = sum(data['votes_730pm'] for data in ELECTION_DAY_730PM_DATA.values())
     for borough, proj in sorted(borough_projections.items()):
-        print(f"  {borough:<13} {proj['votes_6pm']:>9,}   {proj['vs_2021']:>5.0%}    {proj['projected_final']:>9,}")
+        print(f"  {borough:<13} {proj['votes_730pm']:>9,}   {proj['vs_2021']:>5.0%}    {proj['projected_final']:>9,}")
     print("  " + "-" * 55)
-    print(f"  Total         {total_6pm:>9,}           {projected_eday_turnout:>9,}")
-    print(f"\n  Completion: ~{int(total_6pm/projected_eday_turnout*100)}% of E-day votes cast by 6pm")
+    print(f"  Total         {total_730pm:>9,}           {projected_eday_turnout:>9,}")
+    print(f"\n  Completion: ~{int(total_730pm/projected_eday_turnout*100)}% of E-day votes cast by 7:30pm")
     
     print("\n🌡️ HEAT IMPACT ANALYSIS")
     print(f"  Forecast High: {WEATHER_FORECAST['high_temp_f']}°F (Heat Index: {WEATHER_FORECAST['heat_index_f']}°F)")
@@ -1309,18 +1399,19 @@ def save_results_to_json(results: Dict) -> None:
             }
             for age, data in results['eday_breakdown'].items()
         ],
-        'cumulative_6pm': {
-            'total': ACTUAL_6PM_TOTAL,
+        'cumulative_730pm': {
+            'total': ACTUAL_730PM_TOTAL,
             'by_borough': {
-                'Brooklyn': ACTUAL_6PM_CUMULATIVE['Brooklyn'],
-                'Manhattan': ACTUAL_6PM_CUMULATIVE['Manhattan'],
-                'Queens': ACTUAL_6PM_CUMULATIVE['Queens'],
-                'Bronx': ACTUAL_6PM_CUMULATIVE['Bronx'],
-                'Staten Island': ACTUAL_6PM_CUMULATIVE['Staten Island']
+                'Brooklyn': ACTUAL_730PM_CUMULATIVE['Brooklyn'],
+                'Manhattan': ACTUAL_730PM_CUMULATIVE['Manhattan'],
+                'Queens': ACTUAL_730PM_CUMULATIVE['Queens'],
+                'Bronx': ACTUAL_730PM_CUMULATIVE['Bronx'],
+                'Staten Island': ACTUAL_730PM_CUMULATIVE['Staten Island']
             },
             'early_total': ACTUAL_EARLY_TOTAL,
-            'eday_6pm': ACTUAL_EDAY_6PM,
-            'mail_total': ACTUAL_MAIL_TOTAL
+            'eday_730pm': ACTUAL_EDAY_730PM,
+            'mail_total': ACTUAL_MAIL_TOTAL,
+            'pct_of_2021': PCT_OF_2021_TURNOUT
         },
         'rcv_simulation': {
             'rounds': formatted_rounds,

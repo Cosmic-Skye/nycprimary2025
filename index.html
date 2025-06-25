@@ -289,8 +289,8 @@
                     <p class="text-xl font-bold">Final Vote Share: <span class="text-blue-600" id="mamdani-vote-share">--</span> vs <span class="text-red-600" id="cuomo-vote-share">--</span></p>
                     <p class="text-md text-gray-600 mt-2">Projected Victory Margin: <span class="font-bold text-gray-800" id="victory-margin">--</span></p>
                     <div class="mt-3 text-sm text-gray-600">
-                        <p class="font-semibold mb-1">Total votes counted as of 6pm: <span id="total-votes-6pm">--</span></p>
-                        <div id="votes-by-borough-6pm" class="text-xs grid grid-cols-2 gap-1 mt-2"></div>
+                        <p class="font-semibold mb-1">Total votes counted as of 7:30pm: <span id="total-votes-7_30pm">--</span></p>
+                        <div id="votes-by-borough-7_30pm" class="text-xs grid grid-cols-2 gap-1 mt-2"></div>
                     </div>
                 </div>
             </div>
@@ -650,38 +650,38 @@
         // Update gauge needle
         updateGaugeNeedle(modelData.summary.mamdani_win_probability);
         
-        // Calculate and display 6pm vote counts from model data
-        if (modelData.cumulative_6pm) {
-            const totalVotes6pm = modelData.cumulative_6pm.total;
-            document.getElementById('total-votes-6pm').textContent = formatNumber(totalVotes6pm);
+        // Calculate and display 7:30pm vote counts from model data
+        if (modelData.cumulative_730pm) {
+            const totalVotes7_30pm = modelData.cumulative_730pm.total;
+            document.getElementById('total-votes-7_30pm').textContent = formatNumber(totalVotes7_30pm);
             
             // Display by borough using actual cumulative data
-            const boroughContainer = document.getElementById('votes-by-borough-6pm');
-            const boroughVotes6pm = [
-                { name: 'Brooklyn', votes: modelData.cumulative_6pm.by_borough.Brooklyn },
-                { name: 'Manhattan', votes: modelData.cumulative_6pm.by_borough.Manhattan },
-                { name: 'Queens', votes: modelData.cumulative_6pm.by_borough.Queens },
-                { name: 'Bronx', votes: modelData.cumulative_6pm.by_borough.Bronx },
-                { name: 'Staten Island', votes: modelData.cumulative_6pm.by_borough['Staten Island'] }
+            const boroughContainer = document.getElementById('votes-by-borough-7_30pm');
+            const boroughVotes7_30pm = [
+                { name: 'Brooklyn', votes: modelData.cumulative_730pm.by_borough.Brooklyn },
+                { name: 'Manhattan', votes: modelData.cumulative_730pm.by_borough.Manhattan },
+                { name: 'Queens', votes: modelData.cumulative_730pm.by_borough.Queens },
+                { name: 'Bronx', votes: modelData.cumulative_730pm.by_borough.Bronx },
+                { name: 'Staten Island', votes: modelData.cumulative_730pm.by_borough['Staten Island'] }
             ];
             
             let boroughHtml = '';
-            boroughVotes6pm.forEach(borough => {
+            boroughVotes7_30pm.forEach(borough => {
                 boroughHtml += `<div>${borough.name}: ${formatNumber(borough.votes)}</div>`;
             });
             boroughContainer.innerHTML = boroughHtml;
         } else {
-            // Fallback to calculated values if cumulative_6pm not available
-            const edayVotes6pm = 486231;
+            // Fallback to calculated values if cumulative_730pm not available
+            const edayVotes7_30pm = 546167;
             const earlyVotes = modelData.early_voting.total_votes;
             const mailInVotes = 50097;
-            const totalVotes6pm = edayVotes6pm + earlyVotes + mailInVotes;
+            const totalVotes7_30pm = edayVotes7_30pm + earlyVotes + mailInVotes;
             
-            document.getElementById('total-votes-6pm').textContent = formatNumber(totalVotes6pm);
+            document.getElementById('total-votes-7_30pm').textContent = formatNumber(totalVotes7_30pm);
             
             // Display by borough (using early vote data as reference)
-            const boroughContainer = document.getElementById('votes-by-borough-6pm');
-            const boroughVotes6pm = [
+            const boroughContainer = document.getElementById('votes-by-borough-7_30pm');
+            const boroughVotes7_30pm = [
                 { name: 'Manhattan', votes: 155297 + 122642 },
                 { name: 'Brooklyn', votes: 162669 + 142724 },
                 { name: 'Queens', votes: 93576 + 75778 },
@@ -690,7 +690,7 @@
             ];
             
             let boroughHtml = '';
-            boroughVotes6pm.forEach(borough => {
+            boroughVotes7_30pm.forEach(borough => {
                 boroughHtml += `<div>${borough.name}: ${formatNumber(borough.votes)}</div>`;
             });
             boroughContainer.innerHTML = boroughHtml;
